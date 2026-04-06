@@ -1,6 +1,5 @@
 // Wraps LLM-powered summary, Q&A, and cross-video connection generation helpers.
-import { getEnv } from "@/lib/env";
-import { getOpenAIClient } from "@/lib/openai";
+import { generateText } from "@/lib/llm";
 import type { Citation, ConnectionInsight } from "@/lib/types";
 
 export async function answerQuestion(args: {
@@ -14,9 +13,8 @@ export async function answerQuestion(args: {
     )
     .join("\n");
 
-  const response = await getOpenAIClient().responses.create({
-    model: getEnv().chatModel,
-    input: [
+  return generateText({
+    messages: [
       {
         role: "system",
         content:
@@ -28,39 +26,33 @@ export async function answerQuestion(args: {
       }
     ]
   });
-
-  return response.output_text;
 }
 
 export async function summarizeVideo(title: string, transcript: string) {
-  const response = await getOpenAIClient().responses.create({
-    model: getEnv().chatModel,
-    input: [
+  return generateText({
+    messages: [
       {
         role: "system",
         content:
-          "Write a 3-4 sentence research summary of a YouTube transcript. Focus on the main argument, notable claims, and practical takeaway."
+          "Write a 3-4 sentence research summary of a source transcript or document. Focus on the main argument, notable claims, and practical takeaway."
       },
       {
         role: "user",
-        content: `Video title: ${title}\n\nTranscript:\n${transcript.slice(0, 12000)}`
+        content: `Source title: ${title}\n\nContent:\n${transcript.slice(0, 12000)}`
       }
     ]
   });
-
-  return response.output_text;
 }
 
 export async function buildConnections(
   summaries: Array<{ videoTitle: string; summary: string }>
 ) {
-  const response = await getOpenAIClient().responses.create({
-    model: getEnv().chatModel,
-    input: [
+  const response = await generateText({
+    messages: [
       {
         role: "system",
         content:
-          "Identify 3 to 5 shared themes or entities across video summaries. Return each item as 'label | comma-separated video titles | strength from 1 to 5'."
+          "Identify 3 to 5 shared themes or entities across source summaries. Return each item as 'label | comma-separated source titles | strength from 1 to 5'."
       },
       {
         role: "user",
@@ -71,7 +63,7 @@ export async function buildConnections(
     ]
   });
 
-  return parseConnections(response.output_text);
+  return parseConnections(response);
 }
 
 function parseConnections(text: string): ConnectionInsight[] {
