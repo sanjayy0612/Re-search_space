@@ -2,16 +2,24 @@
 
 Mixed-Source Research is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations.
 
-## Why this project
+## Table of Contents
 
-Research is usually split across videos, notes, transcripts, and documents. This project brings them together so you can:
+- News
+- Key Features
+- Architecture
+- Quick Start
+- Install
+- Usage
+- Project Structure
+- Tech Stack
+- Notes
 
-- mix files and URLs in one shared context
-- compare ideas across multiple sources
-- surface patterns, contradictions, and overlaps
-- ask grounded questions without manual searching
+## News
 
-## Highlights
+- 2026-04-06 Mixed-source README refresh and architecture diagram
+- 2026-04-03 Added unified ingestion for YouTube and text files
+
+## Key Features
 
 - YouTube imports with public transcripts
 - Text file uploads: .txt, .md, .mdx, .csv, .json
@@ -19,6 +27,17 @@ Research is usually split across videos, notes, transcripts, and documents. This
 - Cross-source Q&A with citations and timestamps
 - Source selection to narrow chat scope
 - Connection insights across sources
+
+## Architecture
+
+```mermaid
+flowchart LR
+	UI[Next.js UI] -->|HTTP| API[App Router API routes]
+	API -->|Orchestrate| LIB[lib/* services]
+	LIB -->|Read/Write| DB[(Postgres + pgvector)]
+	LIB -->|Embeddings + Answers| LLM[OpenAI]
+	UI <-->|Responses| API
+```
 
 ## Quick Start
 
@@ -33,7 +52,22 @@ npm run dev
 
 Open http://localhost:3000 and import YouTube links or upload text files.
 
-## How it works
+## Install
+
+### Prerequisites
+
+- Node.js 18+
+- Postgres with pgvector enabled
+
+### Database setup
+
+```sql
+CREATE DATABASE yt_rag;
+\c yt_rag
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+## Usage
 
 1. Add YouTube links or upload text files.
 2. The app extracts and chunks content.
@@ -41,42 +75,37 @@ Open http://localhost:3000 and import YouTube links or upload text files.
 4. Questions are embedded and matched against stored chunks.
 5. The LLM answers using only the retrieved evidence.
 
-## Architecture
+## Project Structure
 
-```mermaid
-flowchart LR
-	UI[Next.js UI] -->|HTTP| API[App Router API routes]
-	API -->|Orchestrate| LIB[lib/* services]
-	LIB -->|Read/Write| DB[(Postgres + pgvector)]
-	LIB -->|Embeddings + Answers| LLM[OpenAI]
-	UI <-->|Responses| API
+```
+app/
+	page.tsx              # UI and client-side actions
+	api/
+		chat/route.ts       # Q&A orchestrator
+		connections/route.ts
+		videos/route.ts
+		videos/[id]/route.ts
+		videos/import/route.ts
+lib/
+	chat.ts               # Retrieval + answer pipeline
+	ingest.ts             # YouTube + file ingestion pipeline
+	youtube.ts            # Transcript + metadata fetch
+	chunking.ts           # Chunking logic
+	embeddings.ts         # Embedding generation
+	vector-store.ts       # pgvector search and upserts
+	summarize.ts          # Summaries and grounded answers
+	db.ts                 # Prisma client
+prisma/
+	schema.prisma         # Data model
 ```
 
-## Common use cases
-
-- Research synthesis across videos, notes, and reports
-- Financial analysis (earnings notes + commentary)
-- Learning workflows (lectures + class notes)
-- Personal knowledge management and second-brain setups
-
-## Tech stack
+## Tech Stack
 
 - Next.js (App Router)
 - TypeScript
 - Prisma
 - Postgres + pgvector
 - OpenAI
-
-## Setup
-
-```bash
-npm install
-cp .env.example .env.local
-npm run db:generate
-npm run db:push
-psql "$DATABASE_URL" -f prisma/init.sql
-npm run dev
-```
 
 ## Notes
 
