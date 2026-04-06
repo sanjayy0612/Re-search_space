@@ -1,5 +1,7 @@
 "use client";
 
+// Main dashboard UI for the app: imports videos, scopes which videos participate
+// in retrieval, asks grounded questions, and shows citations plus cross-video themes.
 import { useEffect, useState, useTransition } from "react";
 
 type Video = {
@@ -42,6 +44,8 @@ export default function HomePage() {
   }, []);
 
   async function refreshAll() {
+    // The page treats videos and inferred connections as one snapshot so the
+    // library, chat scope, and side panel stay in sync after every mutation.
     const [videosResponse, connectionsResponse] = await Promise.all([
       fetch("/api/videos"),
       fetch("/api/connections")

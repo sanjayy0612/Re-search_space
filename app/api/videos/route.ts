@@ -1,3 +1,5 @@
+// Lists the videos currently tracked in the workspace so the dashboard can show
+// ingestion status, summaries, and available chat scope.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateWorkspace } from "@/lib/workspace";

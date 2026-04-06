@@ -1,3 +1,5 @@
+// Supports reading a single video's stored chunks and deleting a video from the
+// workspace library.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 

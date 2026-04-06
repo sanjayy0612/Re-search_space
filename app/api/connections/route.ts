@@ -1,3 +1,5 @@
+// Returns shared themes/entities inferred across ready video summaries for the
+// connections panel in the dashboard.
 import { NextResponse } from "next/server";
 import { getWorkspaceConnections } from "@/lib/connections";
 import { getOrCreateWorkspace } from "@/lib/workspace";

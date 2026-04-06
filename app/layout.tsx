@@ -1,3 +1,4 @@
+// Shared root layout that loads global styles and document metadata for the app.
 import type { Metadata } from "next";
 import "./globals.css";
 

@@ -1,3 +1,5 @@
+// Accepts pasted YouTube URLs, ensures a workspace exists, and kicks off the
+// transcript ingestion pipeline for each video.
 import { NextResponse } from "next/server";
 import { importYoutubeLinks } from "@/lib/ingest";
 import { getOrCreateWorkspace } from "@/lib/workspace";

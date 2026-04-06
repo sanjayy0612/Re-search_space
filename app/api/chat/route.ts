@@ -1,3 +1,5 @@
+// Runs a retrieval-augmented question against the current workspace and returns
+// the answer with supporting citations.
 import { NextResponse } from "next/server";
 import { runWorkspaceChat } from "@/lib/chat";
 import { getOrCreateWorkspace } from "@/lib/workspace";
