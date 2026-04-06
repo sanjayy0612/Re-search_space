@@ -1,5 +1,9 @@
 # Mixed-Source Research Dashboard
 
+![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
+![Node](https://img.shields.io/badge/node-18%2B-2ea043.svg)
+![Next.js](https://img.shields.io/badge/next.js-15-black.svg)
+
 Mixed-Source Research is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations.
 
 ## Table of Contents
@@ -12,6 +16,7 @@ Mixed-Source Research is a Next.js workspace that unifies YouTube links and uplo
 - Usage
 - Project Structure
 - Tech Stack
+- License
 - Notes
 
 ## News
@@ -106,6 +111,10 @@ prisma/
 - Prisma
 - Postgres + pgvector
 - OpenAI
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 ## Notes
 
