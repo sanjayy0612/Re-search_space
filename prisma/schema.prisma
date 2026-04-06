@@ -1,0 +1,90 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+model Workspace {
+  id           String        @id @default(cuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  videos       Video[]
+  chatSessions ChatSession[]
+}
+
+model Video {
+  id              String            @id @default(cuid())
+  workspaceId     String
+  youtubeVideoId  String            @unique
+  url             String
+  title           String
+  channelName     String?
+  durationSec     Int?
+  thumbnailUrl    String?
+  transcriptLang  String?
+  summary         String?
+  ingestionStatus IngestionStatus   @default(QUEUED)
+  failureReason   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  chunks          TranscriptChunk[]
+
+  @@index([workspaceId, ingestionStatus])
+}
+
+model TranscriptChunk {
+  id         String   @id @default(cuid())
+  videoId     String
+  chunkIndex  Int
+  content     String
+  startSec    Int
+  endSec      Int
+  tokenCount  Int
+  embedding   Unsupported("vector(1536)")?
+  createdAt   DateTime @default(now())
+  video       Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, chunkIndex])
+  @@index([videoId])
+}
+
+model ChatSession {
+  id         String        @id @default(cuid())
+  workspaceId String
+  title      String
+  createdAt  DateTime      @default(now())
+  workspace  Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages   ChatMessage[]
+}
+
+model ChatMessage {
+  id            String      @id @default(cuid())
+  chatSessionId String
+  role          MessageRole
+  content       String
+  citationsJson Json?
+  createdAt     DateTime    @default(now())
+  chatSession   ChatSession  @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+
+  @@index([chatSessionId, createdAt])
+}
+
+enum IngestionStatus {
+  QUEUED
+  FETCHING_TRANSCRIPT
+  CHUNKING
+  EMBEDDING
+  READY
+  FAILED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
