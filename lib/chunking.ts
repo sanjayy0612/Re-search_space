@@ -2,7 +2,7 @@
 // metadata for each chunk.
 import type { TranscriptLine } from "@/lib/types";
 
-type Chunk = {
+export type Chunk = {
   content: string;
   startSec: number;
   endSec: number;
@@ -50,4 +50,83 @@ function buildChunk(lines: TranscriptLine[]): Chunk {
 
 function estimateTokens(content: string) {
   return Math.ceil(content.length / 4);
+}
+
+export function chunkTextContent(content: string) {
+  const normalized = content.replace(/\r\n/g, "\n").trim();
+
+  if (!normalized) {
+    return [];
+  }
+
+  const paragraphs = normalized
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  const chunks: Array<{
+    content: string;
+    chunkIndex: number;
+    tokenCount: number;
+  }> = [];
+  let buffer = "";
+
+  for (const paragraph of paragraphs) {
+    const candidate = buffer ? `${buffer}\n\n${paragraph}` : paragraph;
+
+    if (candidate.length <= TARGET_CHARS) {
+      buffer = candidate;
+      continue;
+    }
+
+    if (buffer) {
+      chunks.push({
+        content: buffer,
+        chunkIndex: chunks.length,
+        tokenCount: estimateTokens(buffer)
+      });
+      buffer = "";
+    }
+
+    if (paragraph.length <= TARGET_CHARS) {
+      buffer = paragraph;
+      continue;
+    }
+
+    const sentences = paragraph.split(/(?<=[.!?])\s+/);
+    let sentenceBuffer = "";
+
+    for (const sentence of sentences) {
+      const sentenceCandidate = sentenceBuffer ? `${sentenceBuffer} ${sentence}` : sentence;
+
+      if (sentenceCandidate.length <= TARGET_CHARS) {
+        sentenceBuffer = sentenceCandidate;
+        continue;
+      }
+
+      if (sentenceBuffer) {
+        chunks.push({
+          content: sentenceBuffer,
+          chunkIndex: chunks.length,
+          tokenCount: estimateTokens(sentenceBuffer)
+        });
+      }
+
+      sentenceBuffer = sentence;
+    }
+
+    if (sentenceBuffer) {
+      buffer = sentenceBuffer;
+    }
+  }
+
+  if (buffer) {
+    chunks.push({
+      content: buffer,
+      chunkIndex: chunks.length,
+      tokenCount: estimateTokens(buffer)
+    });
+  }
+
+  return chunks;
 }

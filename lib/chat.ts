@@ -9,21 +9,23 @@ import { searchChunks } from "@/lib/vector-store";
 export async function runWorkspaceChat(args: {
   workspaceId: string;
   question: string;
-  videoIds?: string[];
+  sourceIds?: string[];
 }) {
   const [embedding] = await embedTexts([args.question]);
   const matches = await searchChunks({
     embedding,
-    videoIds: args.videoIds,
+    sourceIds: args.sourceIds,
     limit: 8
   });
 
   const citations: Citation[] = matches.map((match) => ({
-    videoId: match.videoId,
+    sourceId: match.sourceId,
+    sourceType: match.sourceType,
     title: match.title,
     chunkId: match.chunkId,
     startSec: match.startSec,
     endSec: match.endSec,
+    locator: match.locator,
     content: match.content
   }));
 

@@ -8,3 +8,10 @@ CREATE INDEX IF NOT EXISTS transcript_chunk_embedding_hnsw_idx
 ON "TranscriptChunk"
 USING hnsw ("embedding" vector_cosine_ops)
 WHERE "embedding" IS NOT NULL;
+
+-- The same index strategy is used for uploaded document chunks so file content
+-- and video transcripts share the same fast retrieval path.
+CREATE INDEX IF NOT EXISTS document_chunk_embedding_hnsw_idx
+ON "DocumentChunk"
+USING hnsw ("embedding" vector_cosine_ops)
+WHERE "embedding" IS NOT NULL;

@@ -10,7 +10,7 @@ export async function answerQuestion(args: {
   const context = args.citations
     .map(
       (citation, index) =>
-        `[${index + 1}] ${citation.title} (${formatTimestamp(citation.startSec)}-${formatTimestamp(citation.endSec)}): ${citation.content}`
+        `[${index + 1}] ${citation.title} (${formatCitationLocation(citation)}): ${citation.content}`
     )
     .join("\n");
 
@@ -20,11 +20,11 @@ export async function answerQuestion(args: {
       {
         role: "system",
         content:
-          "Answer using only the provided transcript evidence. Be concise, compare sources when relevant, and mention uncertainty if the transcript support is weak."
+          "Answer using only the provided source evidence. Be concise, compare sources when relevant, and mention uncertainty if the support is weak."
       },
       {
         role: "user",
-        content: `Question: ${args.question}\n\nTranscript evidence:\n${context}`
+        content: `Question: ${args.question}\n\nSource evidence:\n${context}`
       }
     ]
   });
@@ -97,4 +97,12 @@ export function formatTimestamp(seconds: number) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function formatCitationLocation(citation: Citation) {
+  if (citation.startSec !== null && citation.endSec !== null) {
+    return `${formatTimestamp(citation.startSec)}-${formatTimestamp(citation.endSec)}`;
+  }
+
+  return citation.locator ?? "Excerpt";
 }

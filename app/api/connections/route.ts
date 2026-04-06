@@ -1,4 +1,4 @@
-// Returns shared themes/entities inferred across ready video summaries for the
+// Returns shared themes/entities inferred across ready source summaries for the
 // connections panel in the dashboard.
 import { NextResponse } from "next/server";
 import { getWorkspaceConnections } from "@/lib/connections";

@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
       question?: string;
-      videoIds?: string[];
+      sourceIds?: string[];
     };
 
     if (!body.question?.trim()) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const result = await runWorkspaceChat({
       workspaceId: workspace.id,
       question: body.question,
-      videoIds: body.videoIds
+      sourceIds: body.sourceIds
     });
 
     return NextResponse.json(result);

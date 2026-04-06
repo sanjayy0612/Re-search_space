@@ -170,6 +170,21 @@ button {
   transform: none;
 }
 
+.file-import {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.file-import input[type="file"] {
+  width: 100%;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.52);
+  padding: 14px 16px;
+  color: var(--muted);
+}
+
 .library,
 .citations,
 .connections,
@@ -224,6 +239,14 @@ button {
 .summary,
 .failure {
   margin-top: 14px;
+}
+
+.source-kind {
+  margin: 12px 0 0;
+  color: var(--accent);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .failure {

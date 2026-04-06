@@ -17,6 +17,7 @@ model Workspace {
   createdAt    DateTime      @default(now())
   // A workspace owns the imported video corpus plus the chat sessions created against it.
   videos       Video[]
+  documents    Document[]
   chatSessions ChatSession[]
 }
 
@@ -57,6 +58,38 @@ model TranscriptChunk {
 
   @@unique([videoId, chunkIndex])
   @@index([videoId])
+}
+
+model Document {
+  id              String            @id @default(cuid())
+  workspaceId     String
+  title           String
+  fileName        String
+  mimeType        String?
+  summary         String?
+  ingestionStatus IngestionStatus   @default(QUEUED)
+  failureReason   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  chunks          DocumentChunk[]
+
+  @@index([workspaceId, ingestionStatus])
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  chunkIndex Int
+  content    String
+  tokenCount Int
+  // pgvector stores the embedding generated from this chunk's content for similarity search.
+  embedding  Unsupported("vector(1536)")?
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
 }
 
 model ChatSession {

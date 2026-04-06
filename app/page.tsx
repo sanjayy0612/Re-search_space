@@ -4,21 +4,24 @@
 // in retrieval, asks grounded questions, and shows citations plus cross-video themes.
 import { useEffect, useState, useTransition } from "react";
 
-type Video = {
+type Source = {
   id: string;
+  sourceType: "VIDEO" | "FILE";
   title: string;
-  channelName: string | null;
-  thumbnailUrl: string | null;
+  subtitle: string | null;
   summary: string | null;
   ingestionStatus: string;
   failureReason: string | null;
 };
 
 type Citation = {
+  sourceId: string;
+  sourceType: "VIDEO" | "FILE";
   chunkId: string;
   title: string;
-  startSec: number;
-  endSec: number;
+  startSec: number | null;
+  endSec: number | null;
+  locator: string | null;
   content: string;
 };
 
@@ -30,8 +33,9 @@ type Connection = {
 
 export default function HomePage() {
   const [input, setInput] = useState("");
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -51,7 +55,7 @@ export default function HomePage() {
       fetch("/api/connections")
     ]);
 
-    const videosJson = (await videosResponse.json()) as { videos?: Video[]; error?: string };
+    const videosJson = (await videosResponse.json()) as { sources?: Source[]; error?: string };
     const connectionsJson = (await connectionsResponse.json()) as {
       connections?: Connection[];
     };
@@ -61,18 +65,18 @@ export default function HomePage() {
       return;
     }
 
-    setVideos(videosJson.videos ?? []);
+    setSources(videosJson.sources ?? []);
     setConnections(connectionsJson.connections ?? []);
-    setSelectedVideoIds((current) =>
-      current.filter((id) => (videosJson.videos ?? []).some((video) => video.id === id))
+    setSelectedSourceIds((current) =>
+      current.filter((id) => (videosJson.sources ?? []).some((source) => source.id === id))
     );
   }
 
-  function toggleVideo(videoId: string) {
-    setSelectedVideoIds((current) =>
-      current.includes(videoId)
-        ? current.filter((id) => id !== videoId)
-        : [...current, videoId]
+  function toggleSource(sourceId: string) {
+    setSelectedSourceIds((current) =>
+      current.includes(sourceId)
+        ? current.filter((id) => id !== sourceId)
+        : [...current, sourceId]
     );
   }
 
@@ -98,6 +102,39 @@ export default function HomePage() {
     });
   }
 
+  async function handleFileImport() {
+    if (!selectedFiles?.length) {
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      const formData = new FormData();
+
+      for (const file of Array.from(selectedFiles)) {
+        formData.append("files", file);
+      }
+
+      const response = await fetch("/api/files/import", {
+        method: "POST",
+        body: formData
+      });
+
+      const json = (await response.json()) as { error?: string };
+      if (json.error) {
+        setError(json.error);
+        return;
+      }
+
+      setSelectedFiles(null);
+      const fileInput = document.getElementById("file-import-input") as HTMLInputElement | null;
+      if (fileInput) {
+        fileInput.value = "";
+      }
+      await refreshAll();
+    });
+  }
+
   async function handleAsk() {
     setError(null);
     startTransition(async () => {
@@ -108,7 +145,7 @@ export default function HomePage() {
         },
         body: JSON.stringify({
           question,
-          videoIds: selectedVideoIds.length ? selectedVideoIds : undefined
+          sourceIds: selectedSourceIds.length ? selectedSourceIds : undefined
         })
       });
 
@@ -149,18 +186,18 @@ export default function HomePage() {
     <main className="shell">
       <section className="hero">
         <p className="eyebrow">Weekend Project</p>
-        <h1>YouTube Research Dashboard</h1>
+        <h1>Mixed-Source Research Dashboard</h1>
         <p className="lede">
-          Paste one or many YouTube links, build a transcript-backed knowledge base,
-          and ask grounded questions across videos with timestamped citations.
+          Mix YouTube links and uploaded text files into one searchable knowledge base,
+          then ask grounded questions with source-aware citations.
         </p>
       </section>
 
       <section className="layout">
         <aside className="panel panel-tall">
           <div className="panel-head">
-            <h2>Import Videos</h2>
-            <span>{videos.length} tracked</span>
+            <h2>Import Sources</h2>
+            <span>{sources.length} tracked</span>
           </div>
 
           <textarea
@@ -174,32 +211,53 @@ export default function HomePage() {
             {isPending ? "Processing..." : "Import transcripts"}
           </button>
 
+          <div className="file-import">
+            <input
+              id="file-import-input"
+              type="file"
+              multiple
+              accept=".txt,.md,.mdx,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+              onChange={(event) => setSelectedFiles(event.target.files)}
+            />
+
+            <button
+              className="ghost"
+              onClick={handleFileImport}
+              disabled={isPending || !selectedFiles?.length}
+            >
+              {isPending ? "Uploading..." : "Upload files"}
+            </button>
+          </div>
+
           <div className="library">
-            {videos.map((video) => (
-              <article key={video.id} className="video-card">
+            {sources.map((source) => (
+              <article key={source.id} className="video-card">
                 <label className="video-toggle">
                   <input
                     type="checkbox"
-                    checked={selectedVideoIds.includes(video.id)}
-                    onChange={() => toggleVideo(video.id)}
+                    checked={selectedSourceIds.includes(source.id)}
+                    onChange={() => toggleSource(source.id)}
                   />
                   <span>Use in chat</span>
                 </label>
 
                 <div className="video-meta">
                   <div>
-                    <h3>{video.title}</h3>
-                    <p>{video.channelName ?? "Unknown creator"}</p>
+                    <h3>{source.title}</h3>
+                    <p>{source.subtitle ?? (source.sourceType === "VIDEO" ? "Unknown creator" : "Uploaded file")}</p>
                   </div>
-                  <span className={`status status-${video.ingestionStatus.toLowerCase()}`}>
-                    {video.ingestionStatus.replaceAll("_", " ")}
+                  <span className={`status status-${source.ingestionStatus.toLowerCase()}`}>
+                    {source.ingestionStatus.replaceAll("_", " ")}
                   </span>
                 </div>
 
-                {video.summary ? <p className="summary">{video.summary}</p> : null}
-                {video.failureReason ? <p className="failure">{video.failureReason}</p> : null}
+                <p className="source-kind">
+                  {source.sourceType === "VIDEO" ? "YouTube video" : "File"}
+                </p>
+                {source.summary ? <p className="summary">{source.summary}</p> : null}
+                {source.failureReason ? <p className="failure">{source.failureReason}</p> : null}
 
-                <button className="ghost" onClick={() => handleDelete(video.id)} disabled={isPending}>
+                <button className="ghost" onClick={() => handleDelete(source.id)} disabled={isPending}>
                   Remove
                 </button>
               </article>
@@ -210,8 +268,8 @@ export default function HomePage() {
         <section className="main-column">
           <div className="panel">
             <div className="panel-head">
-              <h2>Cross-Video Chat</h2>
-              <span>{selectedVideoIds.length || videos.length} videos in scope</span>
+              <h2>Cross-Source Chat</h2>
+              <span>{selectedSourceIds.length || sources.length} sources in scope</span>
             </div>
 
             <textarea
@@ -243,9 +301,7 @@ export default function HomePage() {
               {citations.map((citation) => (
                 <article key={citation.chunkId} className="citation-card">
                   <strong>{citation.title}</strong>
-                  <span>
-                    {formatTimestamp(citation.startSec)} - {formatTimestamp(citation.endSec)}
-                  </span>
+                  <span>{formatCitationLocation(citation)}</span>
                   <p>{citation.content}</p>
                 </article>
               ))}
@@ -280,4 +336,12 @@ function formatTimestamp(seconds: number) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function formatCitationLocation(citation: Citation) {
+  if (citation.startSec !== null && citation.endSec !== null) {
+    return `${formatTimestamp(citation.startSec)} - ${formatTimestamp(citation.endSec)}`;
+  }
+
+  return citation.locator ?? "Excerpt";
 }
