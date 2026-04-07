@@ -36,6 +36,8 @@ export default function HomePage() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
+  const [isSourceDrawerOpen, setIsSourceDrawerOpen] = useState(false);
+  const [sourceDrawerTab, setSourceDrawerTab] = useState<"urls" | "files">("urls");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -99,6 +101,7 @@ export default function HomePage() {
 
       setInput("");
       await refreshAll();
+      setIsSourceDrawerOpen(false);
     });
   }
 
@@ -132,6 +135,7 @@ export default function HomePage() {
         fileInput.value = "";
       }
       await refreshAll();
+      setIsSourceDrawerOpen(false);
     });
   }
 
@@ -183,49 +187,105 @@ export default function HomePage() {
   }
 
   return (
-    <main className="shell">
-      <section className="hero">
-        <h1>Re-search Mix</h1>
-        <p className="lede">
-          Mix YouTube links and uploaded text files into one searchable knowledge base,
-          then ask grounded questions with source-aware citations.
-        </p>
-      </section>
+    <>
+      <aside className="source-rail" aria-label="Source drawer controls">
+        <button
+          className={sourceDrawerTab === "urls" ? "rail-button rail-button-active" : "rail-button"}
+          onClick={() => {
+            setSourceDrawerTab("urls");
+            setIsSourceDrawerOpen(true);
+          }}
+          aria-label="Open URL import drawer"
+        >
+          URL
+        </button>
+        <button
+          className={sourceDrawerTab === "files" ? "rail-button rail-button-active" : "rail-button"}
+          onClick={() => {
+            setSourceDrawerTab("files");
+            setIsSourceDrawerOpen(true);
+          }}
+          aria-label="Open file import drawer"
+        >
+          File
+        </button>
+        <span className="rail-pulse" />
+      </aside>
 
-      <section className="layout">
-        <aside className="panel panel-tall">
-          <div className="panel-head">
-            <h2>Import Sources</h2>
-            <span>{sources.length} tracked</span>
+      <div
+        className={`drawer-scrim ${isSourceDrawerOpen ? "drawer-scrim-open" : ""}`}
+        onClick={() => setIsSourceDrawerOpen(false)}
+      />
+
+      <aside className={`source-drawer ${isSourceDrawerOpen ? "source-drawer-open" : ""}`}>
+        <div className="drawer-head">
+          <div>
+            <p className="drawer-kicker">Add context</p>
+            <h2>Source Window</h2>
           </div>
-
-          <textarea
-            className="import-box"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder="Paste one or more YouTube links, each on a new line or separated by spaces."
-          />
-
-          <button className="action" onClick={handleImport} disabled={isPending || !input.trim()}>
-            {isPending ? "Processing..." : "Import transcripts"}
+          <button className="drawer-close" onClick={() => setIsSourceDrawerOpen(false)}>
+            Close
           </button>
+        </div>
 
-          <div className="file-import">
-            <input
-              id="file-import-input"
-              type="file"
-              multiple
-              accept=".txt,.md,.mdx,.csv,.json,text/plain,text/markdown,text/csv,application/json"
-              onChange={(event) => setSelectedFiles(event.target.files)}
+        <div className="drawer-tabs">
+          <button
+            className={sourceDrawerTab === "urls" ? "drawer-tab drawer-tab-active" : "drawer-tab"}
+            onClick={() => setSourceDrawerTab("urls")}
+          >
+            YouTube URLs
+          </button>
+          <button
+            className={sourceDrawerTab === "files" ? "drawer-tab drawer-tab-active" : "drawer-tab"}
+            onClick={() => setSourceDrawerTab("files")}
+          >
+            Files
+          </button>
+        </div>
+
+        {sourceDrawerTab === "urls" ? (
+          <section className="drawer-pane">
+            <h3>Paste links</h3>
+            <p>Add one or many YouTube links. They will be transcribed, chunked, embedded, and added to the shared source graph.</p>
+            <textarea
+              className="import-box"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Paste YouTube links here, one per line or separated by spaces."
             />
 
-            <button
-              className="ghost"
-              onClick={handleFileImport}
-              disabled={isPending || !selectedFiles?.length}
-            >
-              {isPending ? "Uploading..." : "Upload files"}
+            <button className="action" onClick={handleImport} disabled={isPending || !input.trim()}>
+              {isPending ? "Processing..." : "Import transcripts"}
             </button>
+          </section>
+        ) : (
+          <section className="drawer-pane">
+            <h3>Upload files</h3>
+            <p>Keep file uploads separate from URLs. Text files become document chunks and join the same vector search space.</p>
+            <div className="file-import">
+              <input
+                id="file-import-input"
+                type="file"
+                multiple
+                accept=".txt,.md,.mdx,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+                onChange={(event) => setSelectedFiles(event.target.files)}
+              />
+
+              <button
+                className="ghost"
+                onClick={handleFileImport}
+                disabled={isPending || !selectedFiles?.length}
+              >
+                {isPending ? "Uploading..." : "Upload files"}
+              </button>
+            </div>
+          </section>
+        )}
+
+        <section className="drawer-library">
+          <div className="panel-head">
+            <h3>Source Library</h3>
+            <span>{sources.length} tracked</span>
           </div>
 
           <div className="library">
@@ -262,9 +322,20 @@ export default function HomePage() {
               </article>
             ))}
           </div>
-        </aside>
+        </section>
+      </aside>
 
-        <section className="main-column">
+      <main className="shell">
+        <section className="hero">
+          <h1>Re-search Mix</h1>
+          <p className="lede">
+            Mix YouTube links and uploaded text files into one searchable knowledge base,
+            then ask grounded questions with source-aware citations.
+          </p>
+        </section>
+
+        <section className="layout">
+          <section className="main-column">
           <div className="panel">
             <div className="panel-head">
               <h2>Cross-Source Chat</h2>
@@ -328,6 +399,7 @@ export default function HomePage() {
         </aside>
       </section>
     </main>
+    </>
   );
 }
 
