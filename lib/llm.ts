@@ -1,7 +1,8 @@
 // Provides a thin provider-agnostic interface for text generation and
-// embeddings so the app can run on OpenAI or a local Ollama instance.
+// embeddings so the app can run on OpenAI, Ollama, or Groq-backed generation.
 import { getEnv } from "@/lib/env";
 import { getOpenAIClient } from "@/lib/openai";
+import OpenAI from "openai";
 
 type Message = {
   role: "system" | "user" | "assistant";
@@ -37,6 +38,20 @@ export async function generateText(input: { messages: Message[] }) {
     return data.message?.content?.trim() ?? "";
   }
 
+  if (env.modelProvider === "groq") {
+    const groqClient = new OpenAI({
+      apiKey: env.groqApiKey,
+      baseURL: env.groqBaseUrl
+    });
+
+    const response = await groqClient.responses.create({
+      model: env.groqChatModel,
+      input: input.messages
+    });
+
+    return response.output_text;
+  }
+
   const response = await getOpenAIClient().responses.create({
     model: env.openAiChatModel,
     input: input.messages
@@ -52,7 +67,7 @@ export async function generateEmbeddings(input: string[]) {
 
   const env = getEnv();
 
-  if (env.modelProvider === "ollama") {
+  if (env.embeddingProvider === "ollama") {
     const response = await fetch(`${env.ollamaBaseUrl}/api/embed`, {
       method: "POST",
       headers: {

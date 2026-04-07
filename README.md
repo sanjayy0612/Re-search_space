@@ -4,7 +4,7 @@
 ![Node](https://img.shields.io/badge/node-18%2B-2ea043.svg)
 ![Next.js](https://img.shields.io/badge/next.js-15-black.svg)
 
-Mixed-Source Research is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations. The app can run on either OpenAI or local Ollama models.
+Mixed-Source Research is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations. The app can run on OpenAI, Ollama, or Groq-backed generation.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ Mixed-Source Research is a Next.js workspace that unifies YouTube links and uplo
 - Cross-source Q&A with citations and timestamps
 - Source selection to narrow chat scope
 - Connection insights across sources
-- Provider switching between OpenAI and Ollama
+- Provider switching between OpenAI, Ollama, and Groq
 
 ## Architecture
 
@@ -41,7 +41,7 @@ flowchart LR
 	UI[Next.js UI] -->|HTTP| API[App Router API routes]
 	API -->|Orchestrate| LIB[lib/* services]
 	LIB -->|Read/Write| DB[(Postgres + pgvector)]
-	LIB -->|Embeddings + Answers| LLM[OpenAI or Ollama]
+	LIB -->|Embeddings + Answers| LLM[OpenAI or Ollama or Groq]
 	UI <-->|Responses| API
 ```
 
@@ -64,7 +64,7 @@ Open http://localhost:3000 and import YouTube links or upload text files.
 
 - Node.js 18+
 - Postgres with pgvector enabled
-- Either OpenAI API access or a running Ollama instance
+- Either OpenAI API access, a running Ollama instance, or Groq API access
 
 ### Database setup
 
@@ -115,6 +115,33 @@ OLLAMA_EMBEDDING_MODEL="nomic-embed-text"
 
 This lets the same ingestion and retrieval pipeline run on open-source local models.
 
+### Groq
+
+Groq is wired in for text generation through its OpenAI-compatible API. Since this app also needs embeddings for ingestion and retrieval, keep `EMBEDDING_PROVIDER` set to either `openai` or `ollama`.
+
+Use:
+
+```bash
+MODEL_PROVIDER="groq"
+EMBEDDING_PROVIDER="openai"
+GROQ_API_KEY="your_key"
+GROQ_BASE_URL="https://api.groq.com/openai/v1"
+GROQ_CHAT_MODEL="openai/gpt-oss-20b"
+OPENAI_API_KEY="your_openai_key"
+OPENAI_EMBEDDING_MODEL="text-embedding-3-small"
+```
+
+Or with local embeddings:
+
+```bash
+MODEL_PROVIDER="groq"
+EMBEDDING_PROVIDER="ollama"
+GROQ_API_KEY="your_key"
+GROQ_CHAT_MODEL="openai/gpt-oss-20b"
+OLLAMA_BASE_URL="http://127.0.0.1:11434"
+OLLAMA_EMBEDDING_MODEL="nomic-embed-text"
+```
+
 ## Project Structure
 
 ```
@@ -146,7 +173,8 @@ prisma/
 - Prisma
 - Postgres + pgvector
 - OpenAI
-- OpenAI or Ollama
+- Ollama
+- Groq
 
 ## License
 
@@ -155,7 +183,8 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTI
 ## Notes
 
 - YouTube transcripts and uploaded files share the same retrieval system.
-- Model backend is configurable through `MODEL_PROVIDER`.
+- Generation backend is configurable through `MODEL_PROVIDER`.
+- Embedding backend is configurable through `EMBEDDING_PROVIDER`.
 - If you update the Prisma schema, rerun `npm run db:generate` and `npm run db:push`.
 - If the database predates the mixed-source upgrade, rerun `psql "$DATABASE_URL" -f prisma/init.sql` so both vector indexes exist.
 - Current uploads target text-based formats; PDF and DOCX ingestion can be added next.
