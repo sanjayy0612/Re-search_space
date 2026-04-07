@@ -1,7 +1,7 @@
 "use client";
 
-// Main dashboard UI for the app: imports videos, scopes which videos participate
-// in retrieval, asks grounded questions, and shows citations plus cross-video themes.
+// Main dashboard UI for the app: imports sources, scopes which sources participate
+// in retrieval, asks grounded questions, and shows citations.
 import { useEffect, useState, useTransition } from "react";
 
 type Source = {
@@ -25,12 +25,6 @@ type Citation = {
   content: string;
 };
 
-type Connection = {
-  label: string;
-  videos: string[];
-  strength: number;
-};
-
 export default function HomePage() {
   const [input, setInput] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -41,26 +35,19 @@ export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
-  const [connections, setConnections] = useState<Connection[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const readySources = sources.filter((source) => source.ingestionStatus === "READY").length;
+  const activeScopeCount = selectedSourceIds.length || sources.length;
 
   useEffect(() => {
     void refreshAll();
   }, []);
 
   async function refreshAll() {
-    // The page treats videos and inferred connections as one snapshot so the
-    // library, chat scope, and side panel stay in sync after every mutation.
-    const [videosResponse, connectionsResponse] = await Promise.all([
-      fetch("/api/videos"),
-      fetch("/api/connections")
-    ]);
-
+    // Keep the drawer library and chat scope in sync after every source mutation.
+    const videosResponse = await fetch("/api/videos");
     const videosJson = (await videosResponse.json()) as { sources?: Source[]; error?: string };
-    const connectionsJson = (await connectionsResponse.json()) as {
-      connections?: Connection[];
-    };
 
     if (videosJson.error) {
       setError(videosJson.error);
@@ -68,7 +55,6 @@ export default function HomePage() {
     }
 
     setSources(videosJson.sources ?? []);
-    setConnections(connectionsJson.connections ?? []);
     setSelectedSourceIds((current) =>
       current.filter((id) => (videosJson.sources ?? []).some((source) => source.id === id))
     );
@@ -326,79 +312,159 @@ export default function HomePage() {
       </aside>
 
       <main className="shell">
-        <section className="hero">
-          <h1>Re-search Mix</h1>
-          <p className="lede">
-            Mix YouTube links and uploaded text files into one searchable knowledge base,
-            then ask grounded questions with source-aware citations.
-          </p>
-        </section>
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Multi-source research</p>
+            <h1>Re-search Mix</h1>
+          </div>
+
+          <div className="topbar-actions" aria-label="Source import actions">
+            <button
+              className="ghost"
+              onClick={() => {
+                setSourceDrawerTab("urls");
+                setIsSourceDrawerOpen(true);
+              }}
+            >
+              Add URL
+            </button>
+            <button
+              className="action"
+              onClick={() => {
+                setSourceDrawerTab("files");
+                setIsSourceDrawerOpen(true);
+              }}
+            >
+              Add files
+            </button>
+          </div>
+        </header>
 
         <section className="layout">
-          <section className="main-column">
-          <div className="panel">
-            <div className="panel-head">
-              <h2>Cross-Source Chat</h2>
-              <span>{selectedSourceIds.length || sources.length} sources in scope</span>
+          <aside className="scope-panel panel" aria-label="Source status">
+            <div className="scope-intro">
+              <p className="eyebrow">Workspace</p>
+              <h2>Ask across videos and files.</h2>
+              <p>
+                Search your imported material as one collection, or select exact sources from
+                the drawer.
+              </p>
             </div>
 
-            <textarea
-              className="chat-box"
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              placeholder="Ask for a summary, comparison, contradiction, or practical takeaway."
-            />
-
-            <button className="action" onClick={handleAsk} disabled={isPending || !question.trim()}>
-              {isPending ? "Thinking..." : "Ask with citations"}
-            </button>
-
-            {answer ? (
-              <div className="answer-block">
-                <h3>Answer</h3>
-                <p>{answer}</p>
+            <div className="metric-grid">
+              <div className="metric-card">
+                <span>{sources.length}</span>
+                <p>Total sources</p>
               </div>
-            ) : null}
-          </div>
-
-          <div className="panel">
-            <div className="panel-head">
-              <h2>Citations</h2>
-              <span>{citations.length} supporting chunks</span>
+              <div className="metric-card">
+                <span>{readySources}</span>
+                <p>Ready</p>
+              </div>
+              <div className="metric-card">
+                <span>{activeScopeCount}</span>
+                <p>In scope</p>
+              </div>
             </div>
 
-            <div className="citations">
-              {citations.map((citation) => (
-                <article key={citation.chunkId} className="citation-card">
-                  <strong>{citation.title}</strong>
-                  <span>{formatCitationLocation(citation)}</span>
-                  <p>{citation.content}</p>
-                </article>
-              ))}
+            <div className="scope-list">
+              <div className="panel-head compact">
+                <h3>Current scope</h3>
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    setSourceDrawerTab("urls");
+                    setIsSourceDrawerOpen(true);
+                  }}
+                >
+                  Manage
+                </button>
+              </div>
+
+              {sources.length ? (
+                <div className="scope-pills">
+                  {(selectedSourceIds.length
+                    ? sources.filter((source) => selectedSourceIds.includes(source.id))
+                    : sources
+                  ).slice(0, 6).map((source) => (
+                    <span key={source.id} className="scope-pill">
+                      {source.sourceType === "VIDEO" ? "Video" : "File"} - {source.title}
+                    </span>
+                  ))}
+                  {activeScopeCount > 6 ? (
+                    <span className="scope-pill muted">+{activeScopeCount - 6} more</span>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="empty-note">Add a YouTube URL or text file to begin.</p>
+              )}
             </div>
-          </div>
+          </aside>
+
+          <section className="main-column">
+            <div className="panel chat-panel">
+              <div className="panel-head">
+                <div>
+                  <p className="eyebrow">Grounded chat</p>
+                  <h2>What do you want to understand?</h2>
+                </div>
+                <span>{activeScopeCount} sources in scope</span>
+              </div>
+
+              <textarea
+                className="chat-box"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                placeholder="Ask for a summary, comparison, contradiction, or practical takeaway."
+              />
+
+              <div className="chat-actions">
+                <button className="action" onClick={handleAsk} disabled={isPending || !question.trim()}>
+                  {isPending ? "Thinking..." : "Ask with citations"}
+                </button>
+                <span>Answers cite the exact chunks used.</span>
+              </div>
+
+              {answer ? (
+                <div className="answer-block">
+                  <h3>Answer</h3>
+                  <p>{answer}</p>
+                </div>
+              ) : (
+                <div className="answer-block empty-answer">
+                  <h3>No answer yet</h3>
+                  <p>Ask a question once your sources are ready.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="panel">
+              <div className="panel-head">
+                <div>
+                  <p className="eyebrow">Evidence</p>
+                  <h2>Citations</h2>
+                </div>
+                <span>{citations.length} supporting chunks</span>
+              </div>
+
+              <div className="citations">
+                {citations.length ? (
+                  citations.map((citation) => (
+                    <article key={citation.chunkId} className="citation-card">
+                      <strong>{citation.title}</strong>
+                      <span>{formatCitationLocation(citation)}</span>
+                      <p>{citation.content}</p>
+                    </article>
+                  ))
+                ) : (
+                  <p className="empty-note">Supporting chunks will appear after a grounded answer.</p>
+                )}
+              </div>
+            </div>
+
+            {error ? <p className="failure app-error">{error}</p> : null}
+          </section>
         </section>
-
-        <aside className="panel panel-tall">
-          <div className="panel-head">
-            <h2>Connections</h2>
-            <span>GraphRAG-ready</span>
-          </div>
-
-          <div className="connections">
-            {connections.map((connection) => (
-              <article key={`${connection.label}-${connection.videos.join("-")}`} className="connection-card">
-                <strong>{connection.label}</strong>
-                <p>{connection.videos.join(", ")}</p>
-                <span>Strength {connection.strength}/5</span>
-              </article>
-            ))}
-          </div>
-
-          {error ? <p className="failure">{error}</p> : null}
-        </aside>
-      </section>
-    </main>
+      </main>
     </>
   );
 }
