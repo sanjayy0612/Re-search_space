@@ -59,18 +59,10 @@ button {
 
 .hero h1 {
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 5.6rem);
+  font-size: clamp(4rem, 10vw, 11rem);
   line-height: 0.96;
-  letter-spacing: -0.05em;
-  max-width: 10ch;
-}
-
-.eyebrow {
-  margin: 0 0 16px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.82rem;
+  letter-spacing: -0.075em;
+  white-space: nowrap;
 }
 
 .lede {
@@ -306,6 +298,11 @@ button {
 
   .panel {
     padding: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 17vw, 5.4rem);
+    white-space: normal;
   }
 
   .video-meta,

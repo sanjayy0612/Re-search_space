@@ -185,8 +185,7 @@ export default function HomePage() {
   return (
     <main className="shell">
       <section className="hero">
-        <p className="eyebrow">Weekend Project</p>
-        <h1>Mixed-Source Research Dashboard</h1>
+        <h1>Re-search Mix</h1>
         <p className="lede">
           Mix YouTube links and uploaded text files into one searchable knowledge base,
           then ask grounded questions with source-aware citations.
