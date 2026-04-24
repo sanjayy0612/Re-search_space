@@ -51,11 +51,6 @@ ThinkMesh addresses these challenges through a multi-source reasoning architectu
 - **Multi-agent reasoning pipeline** with specialized thinkers and a larger judge model for answer synthesis
 - **Source-grounded responses** with verifiable citations and timestamps anchored to original evidence
 
-## Changelog
-
-- **2026-04-06** — README refresh and architecture diagram updates
-- **2026-04-03** — Unified ingestion pipeline for YouTube transcripts and text files
-
 ## Features
 
 - **Multi-format ingestion** — YouTube transcripts and text uploads (.txt, .md, .mdx, .csv, .json)
