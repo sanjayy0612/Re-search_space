@@ -14,7 +14,7 @@ export async function getOrCreateWorkspace() {
 
   return prisma.workspace.create({
     data: {
-      name: "Weekend Research Workspace"
+      name: "ThinkMesh Workspace"
     }
   });
 }

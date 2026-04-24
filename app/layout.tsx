@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "YT RAG Dashboard",
-  description: "Multi-video YouTube transcript RAG workspace"
+  title: "ThinkMesh",
+  description: "Unified vector-search workspace for videos, files, and multi-agent answers"
 };
 
 export default function RootLayout({

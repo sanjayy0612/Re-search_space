@@ -1,10 +1,10 @@
-# Mixed-Source Research Dashboard
+# ThinkMesh
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 ![Node](https://img.shields.io/badge/node-18%2B-2ea043.svg)
 ![Next.js](https://img.shields.io/badge/next.js-15-black.svg)
 
-Mixed-Source Research is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations. The app can run on OpenAI, Ollama, or Groq-backed generation.
+ThinkMesh is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations. The app can run on OpenAI, Ollama, or Groq-backed generation.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ Mixed-Source Research is a Next.js workspace that unifies YouTube links and uplo
 
 ## News
 
-- 2026-04-06 Mixed-source README refresh and architecture diagram
+- 2026-04-06 ThinkMesh README refresh and architecture diagram
 - 2026-04-03 Added unified ingestion for YouTube and text files
 
 ## Key Features
@@ -69,8 +69,8 @@ Open http://localhost:3000 and import YouTube links or upload text files.
 ### Database setup
 
 ```sql
-CREATE DATABASE yt_rag;
-\c yt_rag
+CREATE DATABASE thinkmesh;
+\c thinkmesh
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
