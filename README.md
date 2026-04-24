@@ -35,36 +35,35 @@
 
 ---
 
-## The Problem
+## Overview
 
-Knowledge work gets fragmented fast. Important context lives across long videos, scattered notes, markdown files, exported datasets, and one-off documents. Traditional chat over a single source misses the bigger picture, while generic RAG pipelines often flatten nuanced evidence into one brittle answer.
+### The Problem
 
-ThinkMesh is built for the opposite workflow: collect mixed-source material, retrieve the strongest evidence, let multiple reasoning personas challenge the question from different angles, and produce a final judged answer grounded in the source text.
+Knowledge work increasingly fragments across disparate sources—long-form videos, scattered notes, markdown documentation, exported datasets, and miscellaneous documents. Traditional single-source chat interfaces lack comprehensive context, while conventional RAG pipelines often reduce nuanced evidence into simplistic answers that fail to capture the full picture.
 
-## The Solution
+### The Solution
 
-ThinkMesh combines:
+ThinkMesh addresses these challenges through a multi-source reasoning architecture:
 
-- Source ingestion for YouTube transcripts and text-based files
-- Chunking and embedding into a shared pgvector-backed retrieval layer
-- Top-k semantic search across both videos and documents
-- A multi-agent answer path with specialist thinkers and a larger judge model
-- Source-aware responses that stay anchored to retrieved evidence
+- **Unified source ingestion** for YouTube transcripts and text-based files
+- **Semantic embeddings** stored in a pgvector-backed retrieval layer with cross-source indexing
+- **Top-k semantic search** across heterogeneous sources (videos and documents)
+- **Multi-agent reasoning pipeline** with specialized thinkers and a larger judge model for answer synthesis
+- **Source-grounded responses** with verifiable citations and timestamps anchored to original evidence
 
-## News
+## Changelog
 
-- 2026-04-06 ThinkMesh README refresh and architecture diagram
-- 2026-04-03 Added unified ingestion for YouTube and text files
+- **2026-04-06** — README refresh and architecture diagram updates
+- **2026-04-03** — Unified ingestion pipeline for YouTube transcripts and text files
 
-## Key Features
+## Features
 
-- YouTube imports with public transcripts
-- Text file uploads: .txt, .md, .mdx, .csv, .json
-- Unified chunking and embedding pipeline across sources
-- Cross-source Q&A with citations and timestamps
-- Source selection to narrow chat scope
-- Connection insights across sources
-- Provider switching between OpenAI, Ollama, and Groq
+- **Multi-format ingestion** — YouTube transcripts and text uploads (.txt, .md, .mdx, .csv, .json)
+- **Unified retrieval layer** — Cross-source semantic search via pgvector embeddings
+- **Grounded Q&A** — Answers with citations, timestamps, and source references
+- **Flexible source scoping** — Narrow queries to specific documents or videos
+- **Cross-source insights** — Analyze connections and relationships across ingested material
+- **Provider flexibility** — Switch between OpenAI, Ollama, and Groq without code changes
 
 ## Architecture
 
@@ -79,26 +78,43 @@ flowchart LR
 
 ## Quick Start
 
-```bash
-npm install
-cp .env.example .env.local
-npm run db:generate
-npm run db:push
-psql "$DATABASE_URL" -f prisma/init.sql
-npm run dev
-```
-
-Open http://localhost:3000 and import YouTube links or upload text files.
-
-## Install
-
 ### Prerequisites
 
-- Node.js 18+
-- Postgres with pgvector enabled
-- Either OpenAI API access, a running Ollama instance, or Groq API access
+- Node.js 18 or later
+- PostgreSQL with pgvector extension enabled
+- API credentials for at least one provider: OpenAI, Ollama, or Groq
 
-### Database setup
+### Installation
+
+1. **Clone and install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+3. **Initialize database:**
+   ```bash
+   npm run db:generate
+   npm run db:push
+   psql "$DATABASE_URL" -f prisma/init.sql
+   ```
+
+4. **Start development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application** at `http://localhost:3000` and begin importing YouTube links or uploading text files.
+
+## Installation
+
+### Database Setup
+
+Create a dedicated database with vector support:
 
 ```sql
 CREATE DATABASE thinkmesh;
@@ -106,37 +122,40 @@ CREATE DATABASE thinkmesh;
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-## Usage
+## Workflow
 
-1. Add YouTube links or upload text files.
-2. The app extracts and chunks content.
-3. Embeddings are generated and stored in pgvector.
-4. Questions are embedded and matched against stored chunks.
-5. The LLM answers using only the retrieved evidence.
+The application follows a structured pipeline for processing and retrieval:
 
-## Model providers
+1. **Ingestion** — Import YouTube links or upload text-based files
+2. **Processing** — Content is automatically chunked and normalized
+3. **Embedding** — Chunks are converted to semantic embeddings via configured provider
+4. **Storage** — Embeddings are indexed and stored in pgvector for efficient retrieval
+5. **Retrieval** — User queries are embedded and matched against stored chunks via semantic similarity
+6. **Generation** — The LLM generates answers using only the retrieved evidence as context
+
+## Model Configuration
 
 ### OpenAI
 
-Use these env settings:
+Configure the following environment variables for OpenAI API integration:
 
 ```bash
 MODEL_PROVIDER="openai"
-OPENAI_API_KEY="your_key"
+OPENAI_API_KEY="your_api_key"
 OPENAI_CHAT_MODEL="gpt-4.1-mini"
 OPENAI_EMBEDDING_MODEL="text-embedding-3-small"
 ```
 
-### Ollama
+### Ollama (Local)
 
-Start Ollama locally and pull the models you want:
+For local, privacy-preserving inference, pull the desired models:
 
 ```bash
 ollama pull llama3.1:8b
 ollama pull nomic-embed-text
 ```
 
-Then use:
+Configure with:
 
 ```bash
 MODEL_PROVIDER="ollama"
@@ -145,30 +164,28 @@ OLLAMA_CHAT_MODEL="llama3.1:8b"
 OLLAMA_EMBEDDING_MODEL="nomic-embed-text"
 ```
 
-This lets the same ingestion and retrieval pipeline run on open-source local models.
+### Groq (Cloud)
 
-### Groq
+Groq provides fast text generation via OpenAI-compatible API. Since embeddings are required for retrieval, configure both a generation and embedding provider:
 
-Groq is wired in for text generation through its OpenAI-compatible API. Since this app also needs embeddings for ingestion and retrieval, keep `EMBEDDING_PROVIDER` set to either `openai` or `ollama`.
-
-Use:
+**Option A: Groq for generation + OpenAI for embeddings**
 
 ```bash
 MODEL_PROVIDER="groq"
 EMBEDDING_PROVIDER="openai"
-GROQ_API_KEY="your_key"
+GROQ_API_KEY="your_groq_key"
 GROQ_BASE_URL="https://api.groq.com/openai/v1"
 GROQ_CHAT_MODEL="openai/gpt-oss-20b"
 OPENAI_API_KEY="your_openai_key"
 OPENAI_EMBEDDING_MODEL="text-embedding-3-small"
 ```
 
-Or with local embeddings:
+**Option B: Groq for generation + Ollama for embeddings**
 
 ```bash
 MODEL_PROVIDER="groq"
 EMBEDDING_PROVIDER="ollama"
-GROQ_API_KEY="your_key"
+GROQ_API_KEY="your_groq_key"
 GROQ_CHAT_MODEL="openai/gpt-oss-20b"
 OLLAMA_BASE_URL="http://127.0.0.1:11434"
 OLLAMA_EMBEDDING_MODEL="nomic-embed-text"
@@ -178,45 +195,59 @@ OLLAMA_EMBEDDING_MODEL="nomic-embed-text"
 
 ```
 app/
-	page.tsx              # UI and client-side actions
-	api/
-		chat/route.ts       # Q&A orchestrator
-		connections/route.ts
-		videos/route.ts
-		videos/[id]/route.ts
-		videos/import/route.ts
+├── page.tsx                    # UI entry point and client-side state
+├── api/
+│   ├── chat/route.ts          # Q&A orchestration endpoint
+│   ├── connections/route.ts    # Cross-source relationship discovery
+│   ├── videos/route.ts         # Video ingestion management
+│   ├── videos/[id]/route.ts    # Individual video operations
+│   ├── videos/import/route.ts  # Batch YouTube import
+│   └── files/import/route.ts   # File upload processing
+│
 lib/
-	chat.ts               # Retrieval + answer pipeline
-	ingest.ts             # YouTube + file ingestion pipeline
-	youtube.ts            # Transcript + metadata fetch
-	chunking.ts           # Chunking logic
-	embeddings.ts         # Embedding generation
-	vector-store.ts       # pgvector search and upserts
-	summarize.ts          # Summaries and grounded answers
-	db.ts                 # Prisma client
+├── chat.ts                    # Core retrieval + answer generation pipeline
+├── ingest.ts                  # Unified ingestion orchestrator
+├── youtube.ts                 # YouTube transcript and metadata extraction
+├── chunking.ts                # Text splitting and normalization
+├── embeddings.ts              # Provider-agnostic embedding generation
+├── vector-store.ts            # pgvector search and index operations
+├── summarize.ts               # Document summarization and grounding
+├── db.ts                      # Prisma ORM client
+├── types.ts                   # Shared TypeScript definitions
+├── workspace.ts               # Multi-workspace management
+├── env.ts                     # Environment variable configuration
+├── llm.ts                     # LLM provider abstraction
+├── openai.ts                  # OpenAI-specific integrations
+├── connections.ts             # Cross-source linking
+└── documents.ts               # Document metadata and operations
+│
 prisma/
-	schema.prisma         # Data model
+├── schema.prisma              # Data model (videos, documents, embeddings)
+└── init.sql                   # Vector index initialization
 ```
 
-## Tech Stack
+## Technology Stack
 
-- Next.js (App Router)
-- TypeScript
-- Prisma
-- Postgres + pgvector
-- OpenAI
-- Ollama
-- Groq
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 15, TypeScript, React |
+| **Backend** | Next.js App Router, Node.js |
+| **Database** | PostgreSQL with pgvector extension |
+| **ORM** | Prisma |
+| **LLM Providers** | OpenAI, Ollama, Groq |
+| **Vector Search** | pgvector |
+| **Type Safety** | TypeScript (strict mode) |
 
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
-## Notes
+## Important Notes
 
-- YouTube transcripts and uploaded files share the same retrieval system.
-- Generation backend is configurable through `MODEL_PROVIDER`.
-- Embedding backend is configurable through `EMBEDDING_PROVIDER`.
-- If you update the Prisma schema, rerun `npm run db:generate` and `npm run db:push`.
-- If the database predates the mixed-source upgrade, rerun `psql "$DATABASE_URL" -f prisma/init.sql` so both vector indexes exist.
-- Current uploads target text-based formats; PDF and DOCX ingestion can be added next.
+- **Unified retrieval** — YouTube transcripts and uploaded documents share the same pgvector-backed search layer, enabling cross-source queries.
+- **Flexible generation** — The `MODEL_PROVIDER` environment variable controls the LLM backend without requiring code changes.
+- **Flexible embeddings** — The `EMBEDDING_PROVIDER` variable independently controls embeddings generation, allowing hybrid configurations (e.g., Groq generation + OpenAI embeddings).
+- **Schema management** — After modifying `prisma/schema.prisma`, run `npm run db:generate` and `npm run db:push` to update the database.
+- **Migration from v0** — If upgrading from a single-source version, execute `psql "$DATABASE_URL" -f prisma/init.sql` to ensure all vector indexes are properly initialized.
+- **Supported formats** — Current implementation supports: .txt, .md, .mdx, .csv, .json. PDF and DOCX ingestion planned for future releases.
+- **Rate limiting** — Respect API rate limits for OpenAI and Groq. Ollama deployments have no rate limits.
