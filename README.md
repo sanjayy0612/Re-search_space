@@ -1,23 +1,55 @@
 # ThinkMesh
 
-![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
-![Node](https://img.shields.io/badge/node-18%2B-2ea043.svg)
-![Next.js](https://img.shields.io/badge/next.js-15-black.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/Vector%20Search-pgvector-1f6feb?style=for-the-badge" alt="pgvector" />
+  <img src="https://img.shields.io/badge/Multi--Source-RAG-111827?style=for-the-badge" alt="Multi-Source RAG" />
+  <img src="https://img.shields.io/badge/Judge-Groq%20gpt--oss--120b-ff6b6b?style=for-the-badge" alt="Groq Judge" />
+</p>
 
-ThinkMesh is a Next.js workspace that unifies YouTube links and uploaded text files into a single, searchable knowledge base. It chunks content, generates embeddings, stores them in Postgres + pgvector, and answers questions with source-aware citations. The app can run on OpenAI, Ollama, or Groq-backed generation.
+<h3 align="center">Turn videos and documents into one searchable reasoning workspace</h3>
 
-## Table of Contents
+<p align="center">
+  ThinkMesh ingests YouTube transcripts and text files, stores embeddings in Postgres + pgvector,
+  retrieves the most relevant chunks, and generates grounded answers through a multi-agent pipeline.
+</p>
 
-- News
-- Key Features
-- Architecture
-- Quick Start
-- Install
-- Usage
-- Project Structure
-- Tech Stack
-- License
-- Notes
+<p align="center">
+  <a href="#the-problem">Problem</a> •
+  <a href="#the-solution">Solution</a> •
+  <a href="#key-features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#model-providers">Models</a> •
+  <a href="#project-structure">Structure</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-Strict-3178c6?style=flat-square" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Prisma-ORM-2d3748?style=flat-square" alt="Prisma" />
+  <img src="https://img.shields.io/badge/Postgres-pgvector-336791?style=flat-square" alt="Postgres" />
+  <img src="https://img.shields.io/badge/Ollama-Local%20Thinkers-6f42c1?style=flat-square" alt="Ollama" />
+  <img src="https://img.shields.io/badge/Groq-Large%20Judge-f97316?style=flat-square" alt="Groq" />
+  <img src="https://img.shields.io/badge/License-Apache--2.0-16a34a?style=flat-square" alt="License" />
+</p>
+
+---
+
+## The Problem
+
+Knowledge work gets fragmented fast. Important context lives across long videos, scattered notes, markdown files, exported datasets, and one-off documents. Traditional chat over a single source misses the bigger picture, while generic RAG pipelines often flatten nuanced evidence into one brittle answer.
+
+ThinkMesh is built for the opposite workflow: collect mixed-source material, retrieve the strongest evidence, let multiple reasoning personas challenge the question from different angles, and produce a final judged answer grounded in the source text.
+
+## The Solution
+
+ThinkMesh combines:
+
+- Source ingestion for YouTube transcripts and text-based files
+- Chunking and embedding into a shared pgvector-backed retrieval layer
+- Top-k semantic search across both videos and documents
+- A multi-agent answer path with specialist thinkers and a larger judge model
+- Source-aware responses that stay anchored to retrieved evidence
 
 ## News
 
