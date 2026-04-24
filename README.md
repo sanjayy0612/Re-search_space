@@ -1,4 +1,4 @@
-# ThinkMesh
+<h1 align="center">ThinkMesh</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Vector%20Search-pgvector-1f6feb?style=for-the-badge" alt="pgvector" />
