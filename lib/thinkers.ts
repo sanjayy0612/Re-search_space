@@ -1,7 +1,9 @@
+import { getEnv } from "@/lib/env";
 import type { SearchChunkResult } from "@/lib/types";
 
 const OLLAMA_CHAT_URL = "http://localhost:11434/api/chat";
 const THINKER_MODEL = "llama3.2";
+const DEFAULT_JUDGE_MODEL = "openai/gpt-oss-120b";
 const THINKER_MAX_TOKENS = 350;
 const JUDGE_MAX_TOKENS = 700;
 
@@ -131,6 +133,42 @@ async function callOllama(messages: ChatMessage[], maxTokens: number) {
   return data.message?.content?.trim() ?? "";
 }
 
+async function callGroqJudge(messages: ChatMessage[], maxTokens: number) {
+  const env = getEnv();
+
+  if (!env.groqApiKey) {
+    throw new Error("GROQ_API_KEY is required for the judge model.");
+  }
+
+  const response = await fetch(`${env.groqBaseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.groqApiKey}`
+    },
+    body: JSON.stringify({
+      model: process.env.GROQ_JUDGE_MODEL ?? DEFAULT_JUDGE_MODEL,
+      messages,
+      max_tokens: maxTokens,
+      stream: false
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Groq judge request failed with status ${response.status}.`);
+  }
+
+  const data = (await response.json()) as {
+    choices?: Array<{
+      message?: {
+        content?: string;
+      };
+    }>;
+  };
+
+  return data.choices?.[0]?.message?.content?.trim() ?? "";
+}
+
 async function runSingleThinker(
   thinker: ThinkerDefinition,
   question: string,
@@ -158,7 +196,7 @@ async function runSingleThinker(
 }
 
 async function runJudge(question: string, chunksText: string, thinkers: ThinkerResponse[]) {
-  return callOllama(
+  return callGroqJudge(
     [
       {
         role: "system",
