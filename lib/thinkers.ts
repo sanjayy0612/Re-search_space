@@ -83,12 +83,18 @@ function buildThinkerUserPrompt(question: string, chunksText: string) {
 }
 
 function buildJudgeUserPrompt(question: string, chunksText: string, thinkers: ThinkerResponse[]) {
-  const thinkerSections = thinkers
-    .map(
-      (thinker) =>
-        [`${thinker.label} (${thinker.role})`, thinker.response].join("\n")
-    )
-    .join("\n\n");
+  const thinkerPayload = JSON.stringify(
+    {
+      question,
+      thinkers: thinkers.map((thinker) => ({
+        role: thinker.role,
+        label: thinker.label,
+        response: thinker.response
+      }))
+    },
+    null,
+    2
+  );
 
   return [
     "Original Question:",
@@ -97,8 +103,8 @@ function buildJudgeUserPrompt(question: string, chunksText: string, thinkers: Th
     "Retrieved Chunks:",
     chunksText,
     "",
-    "Thinker Outputs:",
-    thinkerSections,
+    "Thinker Outputs JSON:",
+    thinkerPayload,
     "",
     "Write the best final answer using only the retrieved evidence and the thinker outputs."
   ].join("\n");
@@ -217,11 +223,12 @@ export async function runThinkers(args: {
   chunks: SearchChunkResult[];
 }): Promise<ThinkersResult> {
   const chunksText = formatChunks(args.chunks);
-  const thinkers = await Promise.all(
-    THINKER_DEFINITIONS.map((thinker) =>
-      runSingleThinker(thinker, args.question, chunksText)
-    )
-  );
+  const thinkers: ThinkerResponse[] = [];
+
+  for (const thinker of THINKER_DEFINITIONS) {
+    thinkers.push(await runSingleThinker(thinker, args.question, chunksText));
+  }
+
   const finalAnswer = await runJudge(args.question, chunksText, thinkers);
 
   return {
