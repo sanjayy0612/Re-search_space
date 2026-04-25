@@ -4,7 +4,7 @@ import type { SearchChunkResult } from "@/lib/types";
 const OLLAMA_CHAT_URL = "http://localhost:11434/api/chat";
 const DEFAULT_JUDGE_MODEL = "openai/gpt-oss-120b";
 const THINKER_MAX_TOKENS = 350;
-const JUDGE_MAX_TOKENS = 700;
+const JUDGE_MAX_TOKENS = 1500;
 
 type ChatMessage = {
   role: "system" | "user" | "assistant";
@@ -45,13 +45,13 @@ const THINKER_DEFINITIONS: ThinkerDefinition[] = [
     role: "connector",
     label: "Connector",
     systemPrompt:
-      "You are Connector. Synthesize relationships across the retrieved chunks. Highlight patterns, agreements, tensions, and how separate pieces of evidence fit together to answer the question."
+      "You are Connector. Do not summarize. Only find non-obvious links and relationships across the retrieved chunks. Highlight patterns, agreements, tensions, and how separate pieces of evidence fit together to answer the question. Focus on connections, not summaries."
   },
   {
     role: "devils-advocate",
     label: "Devil's Advocate",
     systemPrompt:
-      "You are Devil's Advocate. Deliberately test the strongest answer against alternate interpretations that could also fit the retrieved material. Surface edge cases and caveats, but stay grounded in the provided evidence."
+      "You are Devil's Advocate. Argue against the specific claims made in the retrieved chunks. Identify weaknesses, contradictions, ambiguities, and alternative explanations that can be drawn from the provided material only. Do not invent external sources, videos, or information. Stay strictly grounded in the retrieved evidence."
   }
 ];
 
