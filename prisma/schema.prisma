@@ -52,7 +52,8 @@ model TranscriptChunk {
   endSec      Int
   tokenCount  Int
   // pgvector stores the embedding generated from this chunk's content for similarity search.
-  embedding   Unsupported("vector(1536)")?
+  // The default local embedding model is `nomic-embed-text`, which returns 768 dimensions.
+  embedding   Unsupported("vector(768)")?
   createdAt   DateTime @default(now())
   video       Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
@@ -84,7 +85,8 @@ model DocumentChunk {
   content    String
   tokenCount Int
   // pgvector stores the embedding generated from this chunk's content for similarity search.
-  embedding  Unsupported("vector(1536)")?
+  // The default local embedding model is `nomic-embed-text`, which returns 768 dimensions.
+  embedding  Unsupported("vector(768)")?
   createdAt  DateTime @default(now())
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 

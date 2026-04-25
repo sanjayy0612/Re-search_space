@@ -2,7 +2,6 @@ import { getEnv } from "@/lib/env";
 import type { SearchChunkResult } from "@/lib/types";
 
 const OLLAMA_CHAT_URL = "http://localhost:11434/api/chat";
-const THINKER_MODEL = "llama3.2";
 const DEFAULT_JUDGE_MODEL = "openai/gpt-oss-120b";
 const THINKER_MAX_TOKENS = 350;
 const JUDGE_MAX_TOKENS = 700;
@@ -111,13 +110,14 @@ function buildJudgeUserPrompt(question: string, chunksText: string, thinkers: Th
 }
 
 async function callOllama(messages: ChatMessage[], maxTokens: number) {
+  const env = getEnv();
   const response = await fetch(OLLAMA_CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: THINKER_MODEL,
+      model: env.ollamaChatModel,
       stream: false,
       messages,
       options: {
