@@ -1,5 +1,6 @@
 import { getEnv } from "@/lib/env";
 import type { SearchChunkResult } from "@/lib/types";
+import { THINKER_DEFINITIONS, JUDGE_SYSTEM_PROMPT, type ThinkerDefinition } from "@/lib/prompts";
 
 const OLLAMA_CHAT_URL = "http://localhost:11434/api/chat";
 const DEFAULT_JUDGE_MODEL = "openai/gpt-oss-120b";
@@ -9,12 +10,6 @@ const JUDGE_MAX_TOKENS = 1500;
 type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
-};
-
-type ThinkerDefinition = {
-  role: string;
-  label: string;
-  systemPrompt: string;
 };
 
 export type ThinkerResponse = {
@@ -27,33 +22,6 @@ export type ThinkersResult = {
   finalAnswer: string;
   thinkers: ThinkerResponse[];
 };
-
-const THINKER_DEFINITIONS: ThinkerDefinition[] = [
-  {
-    role: "skeptic",
-    label: "Skeptic",
-    systemPrompt:
-      "You are Skeptic. Review the evidence cautiously. Identify weak support, uncertainty, contradictions, and places where the retrieved text does not fully answer the question. Keep the response concise and grounded only in the provided material."
-  },
-  {
-    role: "summarizer",
-    label: "Summarizer",
-    systemPrompt:
-      "You are Summarizer. Produce the clearest direct answer you can using only the provided material. Distill the key facts, omit fluff, and avoid speculation."
-  },
-  {
-    role: "connector",
-    label: "Connector",
-    systemPrompt:
-      "You are Connector. Do not summarize. Only find non-obvious links and relationships across the retrieved chunks. Highlight patterns, agreements, tensions, and how separate pieces of evidence fit together to answer the question. Focus on connections, not summaries."
-  },
-  {
-    role: "devils-advocate",
-    label: "Devil's Advocate",
-    systemPrompt:
-      "You are Devil's Advocate. Argue against the specific claims made in the retrieved chunks. Identify weaknesses, contradictions, ambiguities, and alternative explanations that can be drawn from the provided material only. Do not invent external sources, videos, or information. Stay strictly grounded in the retrieved evidence."
-  }
-];
 
 function formatChunks(chunks: SearchChunkResult[]) {
   if (!chunks.length) {
@@ -206,8 +174,7 @@ async function runJudge(question: string, chunksText: string, thinkers: ThinkerR
     [
       {
         role: "system",
-        content:
-          "You are Judge. Read the four thinker outputs and produce one final answer to the user's question. Use only the retrieved evidence. Reconcile disagreements, preserve important caveats, and do not mention internal deliberation or personas."
+        content: JUDGE_SYSTEM_PROMPT
       },
       {
         role: "user",
