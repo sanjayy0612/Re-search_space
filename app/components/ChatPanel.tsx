@@ -22,66 +22,51 @@ export function ChatPanel({
   onAsk
 }: ChatPanelProps) {
   return (
-    <div className="panel chat-panel">
-      <div className="panel-head">
-        <div>
-          <p className="eyebrow">Grounded chat</p>
-          <h2>What do you want to understand?</h2>
-          <div className="mode-switch" aria-label="Chat mode switch">
-            <button
-              className={mode === "standard" ? "mode-chip mode-chip-active" : "mode-chip"}
-              onClick={() => onModeChange("standard")}
-            >
-              Standard
-            </button>
-            <button
-              className={mode === "mode1" ? "mode-chip mode-chip-active" : "mode-chip"}
-              onClick={() => onModeChange("mode1")}
-            >
-              Mode 1
-            </button>
-            <button
-              className={mode === "mode2" ? "mode-chip mode-chip-active" : "mode-chip"}
-              onClick={() => onModeChange("mode2")}
-            >
-              Mode 2
-            </button>
+    <div className="chat-panel">
+      <div className="chat-content">
+        {!answer && !question ? (
+          <div className="chat-welcome">
+            <h2>What do you want to understand?</h2>
+            <p className="chat-hint">Ask for a summary, contradiction, comparison, causal chain, or practical takeaway.</p>
           </div>
-        </div>
-        <span>{activeScopeCount} sources in scope</span>
+        ) : null}
+
+        {answer ? (
+          <div className="answer-section">
+            <div className="answer-block">
+              <h3>Answer</h3>
+              <p>{answer}</p>
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      <textarea
-        className="chat-box"
-        value={question}
-        onChange={(event) => onQuestionChange(event.target.value)}
-        placeholder="Ask for a summary, contradiction, comparison, causal chain, or practical takeaway."
-      />
+      <div className="chat-input-section">
+        <textarea
+          className="chat-input"
+          value={question}
+          onChange={(event) => onQuestionChange(event.target.value)}
+          placeholder="Ask anything about your sources..."
+          rows={3}
+        />
 
-      <div className="chat-actions">
-        <button className="action" onClick={onAsk} disabled={isPending || !question.trim()}>
-          {isPending ? "Thinking..." : "Ask with citations"}
-        </button>
-        <span>
-          {mode === "standard"
-            ? "Standard retrieval + answer route"
-            : mode === "mode1"
-              ? "Mode 1: local thinker chain + judge"
-              : "Mode 2: FastAPI LangGraph multi-agent chain"}
-        </span>
+        <div className="chat-footer">
+          <button 
+            className="chat-submit"
+            onClick={onAsk} 
+            disabled={isPending || !question.trim()}
+          >
+            {isPending ? "Thinking..." : "Ask with citations"}
+          </button>
+          <span className="mode-info">
+            {mode === "standard"
+              ? "Standard retrieval"
+              : mode === "mode1"
+                ? "Mode 1 reasoning"
+                : "Mode 2 chain"}
+          </span>
+        </div>
       </div>
-
-      {answer ? (
-        <div className="answer-block">
-          <h3>Answer</h3>
-          <p>{answer}</p>
-        </div>
-      ) : (
-        <div className="answer-block empty-answer">
-          <h3>No answer yet</h3>
-          <p>Ask a question once your sources are ready.</p>
-        </div>
-      )}
     </div>
   );
 }

@@ -7,8 +7,6 @@ type ScopePanelProps = {
   isPending: boolean;
   sources: Source[];
   selectedSourceIds: string[];
-  readySources: number;
-  activeScopeCount: number;
   onTabChange: (tab: SourceDrawerTab) => void;
   onInputChange: (value: string) => void;
   onFilesChange: (files: FileList | null) => void;
@@ -25,8 +23,6 @@ export function ScopePanel({
   isPending,
   sources,
   selectedSourceIds,
-  readySources,
-  activeScopeCount,
   onTabChange,
   onInputChange,
   onFilesChange,
@@ -35,12 +31,8 @@ export function ScopePanel({
   onToggleSource,
   onDeleteSource
 }: ScopePanelProps) {
-  const visibleScope = selectedSourceIds.length
-    ? sources.filter((source) => selectedSourceIds.includes(source.id))
-    : sources;
-
   return (
-    <aside className="scope-panel panel" aria-label="Source status">
+    <aside className="scope-panel panel" aria-label="Source studio">
       <section className="sidebar-ingest">
         <div className="panel-head compact">
           <h3>Source Studio</h3>
@@ -104,60 +96,14 @@ export function ScopePanel({
         )}
       </section>
 
-      <div className="scope-intro">
-        <p className="eyebrow">Workspace</p>
-        <h2>Ask one question across every source.</h2>
-        <p>
-          Query all imported sources as one evidence graph, or constrain scope to exact items from
-          the source studio.
-        </p>
-      </div>
-
-      <div className="metric-grid">
-        <div className="metric-card">
-          <span>{sources.length}</span>
-          <p>Total sources</p>
-        </div>
-        <div className="metric-card">
-          <span>{readySources}</span>
-          <p>Ready</p>
-        </div>
-        <div className="metric-card">
-          <span>{activeScopeCount}</span>
-          <p>In scope</p>
-        </div>
-      </div>
-
-      <div className="scope-list">
-        <div className="panel-head compact">
-          <h3>Current scope</h3>
-          <span>{activeScopeCount} selected</span>
-        </div>
-
-        {sources.length ? (
-          <div className="scope-pills">
-            {visibleScope.slice(0, 6).map((source) => (
-              <span key={source.id} className="scope-pill">
-                {source.sourceType === "VIDEO" ? "Video" : "File"} - {source.title}
-              </span>
-            ))}
-            {activeScopeCount > 6 ? (
-              <span className="scope-pill muted">+{activeScopeCount - 6} more</span>
-            ) : null}
-          </div>
-        ) : (
-          <p className="empty-note">Add a YouTube URL or text file to begin.</p>
-        )}
-      </div>
-
       <section>
         <div className="panel-head compact">
           <h3>Library</h3>
-          <span>Toggle what chat can use</span>
+          <span>{selectedSourceIds.length || sources.length} in scope</span>
         </div>
 
         <div className="library scope-library">
-          {sources.map((source) => (
+          {sources.length ? sources.map((source) => (
             <article key={source.id} className="video-card">
               <label className="video-toggle">
                 <input
@@ -189,7 +135,7 @@ export function ScopePanel({
                 Remove
               </button>
             </article>
-          ))}
+          )) : <p className="empty-note">No sources yet. Add a URL or file to begin.</p>}
         </div>
       </section>
     </aside>

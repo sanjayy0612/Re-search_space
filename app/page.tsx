@@ -4,8 +4,7 @@
 // in retrieval, asks grounded questions, and shows citations.
 import { useEffect, useState, useTransition } from "react";
 import { ChatPanel } from "@/app/components/ChatPanel";
-import { CitationsPanel } from "@/app/components/CitationsPanel";
-import { ScopePanel } from "@/app/components/ScopePanel";
+import { Sidebar } from "@/app/components/Sidebar";
 import { TopBar } from "@/app/components/TopBar";
 import type { Citation, ChatMode, Source, SourceDrawerTab } from "@/app/components/types";
 
@@ -15,16 +14,13 @@ export default function HomePage() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [sourceDrawerTab, setSourceDrawerTab] = useState<SourceDrawerTab>("urls");
-  const [isSourceStudioOpen, setIsSourceStudioOpen] = useState(true);
-  const [isCitationsOpen, setIsCitationsOpen] = useState(true);
+  const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
   const [chatMode, setChatMode] = useState<ChatMode>("standard");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const readySources = sources.filter((source) => source.ingestionStatus === "READY").length;
-  const activeScopeCount = selectedSourceIds.length || sources.length;
 
   useEffect(() => {
     void refreshAll();
@@ -169,51 +165,33 @@ export default function HomePage() {
       <main className="shell">
         <TopBar />
 
-        <aside className="workspace-toggle-rail" aria-label="Workspace panel controls">
-          <button
-            className={isSourceStudioOpen ? "workspace-toggle workspace-toggle-active" : "workspace-toggle"}
-            onClick={() => setIsSourceStudioOpen((current) => !current)}
-            aria-pressed={isSourceStudioOpen}
-          >
-            Studio
-          </button>
-          <button
-            className={isCitationsOpen ? "workspace-toggle workspace-toggle-active" : "workspace-toggle"}
-            onClick={() => setIsCitationsOpen((current) => !current)}
-            aria-pressed={isCitationsOpen}
-          >
-            Cite
-          </button>
-        </aside>
+        <div className="main-layout">
+          <Sidebar
+            sourceDrawerTab={sourceDrawerTab}
+            input={input}
+            selectedFiles={selectedFiles}
+            isPending={isPending}
+            sources={sources}
+            selectedSourceIds={selectedSourceIds}
+            chatMode={chatMode}
+            isCitationsOpen={isCitationsOpen}
+            citations={citations}
+            onTabChange={setSourceDrawerTab}
+            onInputChange={setInput}
+            onFilesChange={setSelectedFiles}
+            onImport={handleImport}
+            onFileImport={handleFileImport}
+            onToggleSource={toggleSource}
+            onDeleteSource={handleDelete}
+            onModeChange={setChatMode}
+            onToggleCitations={() => setIsCitationsOpen((current) => !current)}
+          />
 
-        <section
-          className={`workspace-layout ${isSourceStudioOpen ? "with-source" : ""} ${isCitationsOpen ? "with-citations" : ""}`}
-        >
-          {isSourceStudioOpen ? (
-            <ScopePanel
-              tab={sourceDrawerTab}
-              input={input}
-              selectedFiles={selectedFiles}
-              isPending={isPending}
-              sources={sources}
-              selectedSourceIds={selectedSourceIds}
-              readySources={readySources}
-              activeScopeCount={activeScopeCount}
-              onTabChange={setSourceDrawerTab}
-              onInputChange={setInput}
-              onFilesChange={setSelectedFiles}
-              onImport={handleImport}
-              onFileImport={handleFileImport}
-              onToggleSource={toggleSource}
-              onDeleteSource={handleDelete}
-            />
-          ) : null}
-
-          <section className="chat-stage">
+          <section className="chat-container">
             <ChatPanel
               question={question}
               answer={answer}
-              activeScopeCount={activeScopeCount}
+              activeScopeCount={selectedSourceIds.length || sources.length}
               isPending={isPending}
               mode={chatMode}
               onModeChange={setChatMode}
@@ -223,13 +201,7 @@ export default function HomePage() {
 
             {error ? <p className="failure app-error">{error}</p> : null}
           </section>
-
-          {isCitationsOpen ? (
-            <aside className="citations-dock">
-              <CitationsPanel citations={citations} />
-            </aside>
-          ) : null}
-        </section>
+        </div>
       </main>
     </>
   );
