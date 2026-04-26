@@ -207,7 +207,7 @@ export default function HomePage() {
         <div className="drawer-head">
           <div>
             <p className="drawer-kicker">Add context</p>
-            <h2>Source Window</h2>
+            <h2>Source Studio</h2>
           </div>
           <button className="drawer-close" onClick={() => setIsSourceDrawerOpen(false)}>
             Close
@@ -232,7 +232,7 @@ export default function HomePage() {
         {sourceDrawerTab === "urls" ? (
           <section className="drawer-pane">
             <h3>Paste links</h3>
-            <p>Add one or many YouTube links. They will be transcribed, chunked, embedded, and added to the shared source graph.</p>
+            <p>Add one or many YouTube links. Each video is transcribed, chunked, embedded, and indexed in your shared context space.</p>
             <textarea
               className="import-box"
               value={input}
@@ -247,7 +247,7 @@ export default function HomePage() {
         ) : (
           <section className="drawer-pane">
             <h3>Upload files</h3>
-            <p>Keep file uploads separate from URLs. Text files become document chunks and join the same vector search space.</p>
+            <p>Upload research notes and datasets. Text files are chunked and added to the same retrieval index as your videos.</p>
             <div className="file-import">
               <input
                 id="file-import-input"
@@ -314,8 +314,8 @@ export default function HomePage() {
       <main className="shell">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Multi-source research</p>
-            <h1>Re-search Mix</h1>
+            <p className="eyebrow">Multi-source intelligence workspace</p>
+            <h1>Context Atlas</h1>
           </div>
 
           <div className="topbar-actions" aria-label="Source import actions">
@@ -344,10 +344,10 @@ export default function HomePage() {
           <aside className="scope-panel panel" aria-label="Source status">
             <div className="scope-intro">
               <p className="eyebrow">Workspace</p>
-              <h2>Ask across videos and files.</h2>
+              <h2>Ask one question across every source.</h2>
               <p>
-                Search your imported material as one collection, or select exact sources from
-                the drawer.
+                Query all imported sources as one evidence graph, or constrain scope to exact
+                items from the drawer.
               </p>
             </div>
 
