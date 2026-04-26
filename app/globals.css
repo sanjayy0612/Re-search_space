@@ -275,6 +275,30 @@ button {
   text-wrap: balance;
 }
 
+.hero-subtitle {
+  max-width: 72ch;
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.hero-chips span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 11px;
+  background: rgba(164, 189, 229, 0.09);
+  color: #c8d8f1;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
 .topbar-actions {
   justify-content: flex-end;
   gap: 10px;
@@ -394,6 +418,31 @@ button {
 
 .panel-head h3 {
   font-size: 1.08rem;
+}
+
+.mode-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mode-chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(164, 189, 229, 0.08);
+  color: #bfd0ea;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+}
+
+.mode-chip-active {
+  border-color: rgba(69, 198, 190, 0.54);
+  background: rgba(69, 198, 190, 0.2);
+  color: #e9fffb;
 }
 
 .import-box,
@@ -684,6 +733,10 @@ button {
   .topbar h1 {
     font-size: clamp(2.7rem, 18vw, 4.7rem);
     letter-spacing: -0.035em;
+  }
+
+  .hero-subtitle {
+    max-width: none;
   }
 
   .panel {

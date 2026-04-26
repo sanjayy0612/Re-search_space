@@ -34,7 +34,12 @@ export async function POST(request: Request) {
       chunks
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      answer: result.finalAnswer,
+      citations: chunks,
+      thinkers: result.thinkers,
+      mode: "mode1"
+    });
   } catch (error) {
     return NextResponse.json(
       {
