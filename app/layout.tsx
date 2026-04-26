@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Context Atlas",
-  description: "Context Atlas is a unified research workspace for videos, files, and grounded multi-source answers"
+  title: "ThinkMesh",
+  description: "ThinkMesh is a unified research workspace for videos, files, and grounded multi-source answers"
 };
 
 export default function RootLayout({

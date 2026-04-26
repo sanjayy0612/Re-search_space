@@ -1,16 +1,16 @@
 :root {
-  --bg: #f7f8ff;
-  --paper: rgba(255, 255, 255, 0.86);
-  --paper-strong: #ffffff;
-  --ink: #152237;
-  --muted: #53617a;
-  --line: rgba(21, 34, 55, 0.14);
-  --accent: #007c78;
-  --accent-dark: #01605d;
-  --accent-soft: rgba(0, 124, 120, 0.12);
-  --green: #1b7f58;
-  --green-soft: rgba(27, 127, 88, 0.13);
-  --shadow: 0 22px 60px rgba(18, 42, 79, 0.12);
+  --bg: #0b111a;
+  --paper: rgba(17, 26, 40, 0.78);
+  --paper-strong: #111a28;
+  --ink: #e8eef8;
+  --muted: #9aaac2;
+  --line: rgba(196, 215, 242, 0.16);
+  --accent: #45c6be;
+  --accent-dark: #2ea9a1;
+  --accent-soft: rgba(69, 198, 190, 0.18);
+  --green: #69d1a0;
+  --green-soft: rgba(105, 209, 160, 0.14);
+  --shadow: 0 22px 60px rgba(4, 9, 20, 0.52);
   --radius: 12px;
 }
 
@@ -28,9 +28,9 @@ body {
   color: var(--ink);
   font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at 8% 0%, rgba(0, 124, 120, 0.18), transparent 30%),
-    radial-gradient(circle at 92% 0%, rgba(255, 107, 53, 0.16), transparent 34%),
-    linear-gradient(180deg, #f6f9ff 0%, #e8f0ff 52%, #f4f7ff 100%);
+    radial-gradient(circle at 8% 0%, rgba(69, 198, 190, 0.19), transparent 32%),
+    radial-gradient(circle at 92% 0%, rgba(73, 118, 255, 0.13), transparent 34%),
+    linear-gradient(180deg, #0b111a 0%, #0e1724 52%, #121d2d 100%);
 }
 
 a {
@@ -59,8 +59,8 @@ button {
   padding: 10px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 22px 60px rgba(20, 35, 58, 0.16);
+  background: rgba(15, 23, 35, 0.76);
+  box-shadow: 0 22px 60px rgba(4, 9, 20, 0.46);
   backdrop-filter: blur(18px);
   transform: translateY(-50%);
 }
@@ -68,10 +68,10 @@ button {
 .rail-button {
   width: 40px;
   height: 40px;
-  border: 1px solid rgba(21, 34, 55, 0.12);
+  border: 1px solid rgba(196, 215, 242, 0.14);
   border-radius: var(--radius);
-  background: rgba(21, 34, 55, 0.06);
-  color: rgba(21, 34, 55, 0.66);
+  background: rgba(148, 177, 221, 0.08);
+  color: rgba(227, 238, 255, 0.72);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -190,9 +190,9 @@ button {
 
 .drawer-close,
 .drawer-tab {
-  border: 1px solid rgba(255, 251, 245, 0.14);
-  background: rgba(255, 251, 245, 0.08);
-  color: rgba(255, 248, 238, 0.78);
+  border: 1px solid rgba(195, 214, 244, 0.2);
+  background: rgba(175, 196, 229, 0.1);
+  color: rgba(231, 241, 255, 0.86);
   padding: 10px 14px;
 }
 
@@ -200,26 +200,26 @@ button {
   justify-content: flex-start;
   gap: 8px;
   padding: 6px;
-  border: 1px solid rgba(255, 251, 245, 0.1);
+  border: 1px solid rgba(195, 214, 244, 0.16);
   border-radius: var(--radius);
-  background: rgba(255, 251, 245, 0.08);
+  background: rgba(175, 196, 229, 0.08);
 }
 
 .drawer-tab-active {
-  background: #fff8ee;
-  color: #1f1d1a;
+  background: rgba(231, 241, 255, 0.94);
+  color: #102034;
 }
 
 .drawer-pane {
-  border: 1px solid rgba(255, 251, 245, 0.12);
+  border: 1px solid rgba(195, 214, 244, 0.16);
   border-radius: var(--radius);
-  background: rgba(255, 251, 245, 0.08);
+  background: rgba(176, 197, 229, 0.08);
   padding: 18px;
 }
 
 .drawer-pane p {
   margin: 8px 0 14px;
-  color: rgba(255, 248, 238, 0.68);
+  color: rgba(215, 230, 250, 0.72);
   line-height: 1.6;
 }
 
@@ -237,21 +237,22 @@ button {
 .drawer-library .video-meta p,
 .drawer-library .summary,
 .drawer-library .video-toggle {
-  color: rgba(255, 248, 238, 0.66);
+  color: rgba(215, 230, 250, 0.72);
 }
 
 .drawer-library .video-card {
-  background: rgba(255, 251, 245, 0.08);
-  border-color: rgba(255, 251, 245, 0.12);
+  background: rgba(176, 197, 229, 0.08);
+  border-color: rgba(195, 214, 244, 0.16);
 }
 
 .drawer-library .ghost {
-  background: rgba(255, 248, 238, 0.1);
+  background: rgba(176, 197, 229, 0.16);
 }
 
 .source-drawer .import-box,
 .source-drawer .file-import input[type="file"] {
-  background: rgba(255, 248, 238, 0.94);
+  background: rgba(9, 15, 24, 0.84);
+  color: #e8eef8;
 }
 
 .shell {
@@ -264,7 +265,7 @@ button {
 .topbar {
   margin-bottom: 22px;
   padding: 10px 0 18px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(196, 215, 242, 0.2);
 }
 
 .topbar h1 {
@@ -321,7 +322,7 @@ button {
 .metric-card {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.46);
+  background: rgba(164, 189, 229, 0.1);
   padding: 14px 12px;
 }
 
@@ -357,7 +358,7 @@ button {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(164, 189, 229, 0.1);
   color: var(--muted);
   font-size: 0.9rem;
   text-overflow: ellipsis;
@@ -400,7 +401,7 @@ button {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.68);
+  background: rgba(10, 17, 27, 0.82);
   padding: 16px 18px;
   resize: vertical;
   line-height: 1.6;
@@ -411,9 +412,9 @@ button {
 
 .import-box:focus,
 .chat-box:focus {
-  border-color: rgba(200, 99, 42, 0.48);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 0 0 4px rgba(200, 99, 42, 0.12);
+  border-color: rgba(69, 198, 190, 0.48);
+  background: rgba(12, 20, 31, 0.9);
+  box-shadow: 0 0 0 4px rgba(69, 198, 190, 0.16);
 }
 
 .import-box {
@@ -487,7 +488,7 @@ button {
   width: 100%;
   border: 1px dashed var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.52);
+  background: rgba(10, 17, 27, 0.65);
   padding: 14px 16px;
   color: var(--muted);
 }
@@ -497,13 +498,13 @@ button {
 .answer-block {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(164, 189, 229, 0.1);
   padding: 16px;
 }
 
 .answer-block {
   margin-top: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 251, 245, 0.9));
+  background: linear-gradient(180deg, rgba(164, 189, 229, 0.14), rgba(117, 149, 199, 0.09));
 }
 
 .empty-answer {
@@ -556,7 +557,7 @@ button {
 }
 
 .failure {
-  color: #9f2d20;
+  color: #ff9787;
 }
 
 .app-error {
@@ -582,14 +583,14 @@ button {
 
 .status-failed {
   background: rgba(159, 45, 32, 0.12);
-  color: #9f2d20;
+  color: #ff9787;
 }
 
 .status-queued,
 .status-fetching_transcript,
 .status-chunking,
 .status-embedding {
-  background: rgba(200, 99, 42, 0.12);
+  background: rgba(69, 198, 190, 0.16);
   color: var(--accent);
 }
 

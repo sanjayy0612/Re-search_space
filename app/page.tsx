@@ -315,7 +315,7 @@ export default function HomePage() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Multi-source intelligence workspace</p>
-            <h1>Context Atlas</h1>
+            <h1>ThinkMesh</h1>
           </div>
 
           <div className="topbar-actions" aria-label="Source import actions">
