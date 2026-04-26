@@ -1,16 +1,24 @@
-import httpx
+import os
 from typing import List
+import httpx
+
 
 async def perform_web_search(query: str) -> List[str]:
     """
-    Performs a web search and returns a list of top results.
+    Performs a web search using Google Custom Search API
+    and returns a list of formatted results (title + snippet + link).
     """
-    search_url = f"https://www.googleapis.com/customsearch/v1"
-    api_key = "YOUR_GOOGLE_API_KEY"  # Replace with your API Key
-    search_engine_id = "YOUR_SEARCH_ENGINE_ID"  # Replace with your Search Engine ID
+
+    search_url = "https://www.googleapis.com/customsearch/v1"
+    api_key = os.getenv("GOOGLE_API_KEY")
+    search_engine_id = os.getenv("SEARCH_ENGINE_ID")
+
+    # 🔒 Validate API keys
+    if not api_key or not search_engine_id:
+        return ["Web search error: Missing API credentials"]
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
                 search_url,
                 params={
@@ -19,15 +27,33 @@ async def perform_web_search(query: str) -> List[str]:
                     "q": query,
                 },
             )
+
             response.raise_for_status()
             results = response.json()
 
-            # Extract the top search results
-            top_results = [
-                item['snippet'] for item in results.get('items', [])[:5]  # Extract the first 5 snippets
-            ]
-            return top_results
+            items = results.get("items", [])
+
+            if not items:
+                return ["No web results found."]
+
+            # 📌 Extract top 5 results with richer info
+            formatted_results = []
+            for item in items[:5]:
+                title = item.get("title", "No title")
+                snippet = item.get("snippet", "No description")
+                link = item.get("link", "")
+
+                formatted_results.append(
+                    f"Title: {title}\nSnippet: {snippet}\nLink: {link}"
+                )
+
+            return formatted_results
+
+    except httpx.TimeoutException:
+        return ["Web search timeout. Try again."]
+
+    except httpx.HTTPStatusError as e:
+        return [f"Web search HTTP error: {e.response.status_code}"]
 
     except Exception as e:
-        print(f"Error during web search: {e}")
-        return []
+        return [f"Web search failed: {str(e)}"]
