@@ -1,8 +1,8 @@
-import type { ChatMode } from "@/app/components/types";
+import type { ChatMode, Message } from "@/app/components/types";
 
 type ChatPanelProps = {
+  messages: Message[];
   question: string;
-  answer: string;
   activeScopeCount: number;
   isPending: boolean;
   mode: ChatMode;
@@ -12,8 +12,8 @@ type ChatPanelProps = {
 };
 
 export function ChatPanel({
+  messages,
   question,
-  answer,
   activeScopeCount,
   isPending,
   mode,
@@ -24,21 +24,35 @@ export function ChatPanel({
   return (
     <div className="chat-panel">
       <div className="chat-content">
-        {!answer && !question ? (
+        {messages.length === 0 ? (
           <div className="chat-welcome">
-            <h2>What do you want to understand?</h2>
-            <p className="chat-hint">Ask for a summary, contradiction, comparison, causal chain, or practical takeaway.</p>
+            <h2>Welcome to Research Space</h2>
+            <p className="chat-hint">
+              Select your sources and ask complex questions. Try Mode 2 for deep multi-agent reasoning.
+            </p>
           </div>
-        ) : null}
-
-        {answer ? (
-          <div className="answer-section">
-            <div className="answer-block">
-              <h3>Answer</h3>
-              <p>{answer}</p>
+        ) : (
+          messages.map((msg, idx) => (
+            <div key={idx} className={`chat-bubble ${msg.role}`}>
+              {msg.role === "assistant" && msg.thinkers && msg.thinkers.length > 0 && (
+                <div className="thinker-chain">
+                  {msg.thinkers.map((t, tidx) => (
+                    <div key={tidx} className="thinker-step">
+                      <span className="thinker-label">{t.label}</span>
+                      {t.response.length > 100 ? t.response.substring(0, 100) + "..." : t.response}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="message-text">{msg.content}</div>
             </div>
+          ))
+        )}
+        {isPending && (
+          <div className="chat-bubble assistant thinking">
+            <span className="thinker-label">Deep Researching...</span>
           </div>
-        ) : null}
+        )}
       </div>
 
       <div className="chat-input-section">
@@ -46,8 +60,13 @@ export function ChatPanel({
           className="chat-input"
           value={question}
           onChange={(event) => onQuestionChange(event.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              onAsk();
+            }
+          }}
           placeholder="Ask anything about your sources..."
-          rows={3}
         />
 
         <div className="chat-footer">
@@ -56,14 +75,14 @@ export function ChatPanel({
             onClick={onAsk} 
             disabled={isPending || !question.trim()}
           >
-            {isPending ? "Thinking..." : "Ask with citations"}
+            {isPending ? "Analysing..." : "Submit Query"}
           </button>
           <span className="mode-info">
             {mode === "standard"
-              ? "Standard retrieval"
+              ? "Standard Search"
               : mode === "mode1"
-                ? "Mode 1 reasoning"
-                : "Mode 2 chain"}
+                ? "Reasoning Mode"
+                : "Deep Multi-Agent Mode"}
           </span>
         </div>
       </div>

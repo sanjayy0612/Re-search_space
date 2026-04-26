@@ -93,7 +93,7 @@ Mode 1 runs inside the Next.js app. Retrieval happens in TypeScript, then the ap
 Mode 2 is a separate Python service in `agent/`. The Next.js app can send the already-retrieved chunks and user question to this service, which runs a LangGraph state machine and returns the final answer plus each persona response.
 
 - Service route: `POST http://localhost:8000/mode2`
-- Graph order: `Summarizer -> Skeptic -> Devil's Advocate -> Connector -> Judge`
+- Graph order: `Summarizer -> Skeptic -> Devil's Advocate -> Connector -> Web Search -> Dynamic Retrieval -> Wikipedia Lookup -> Judge`
 - Ollama persona model: `qwen2.5:3b`
 - Groq judge model: `llama-3.1-8b-instant`
 

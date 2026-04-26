@@ -6,7 +6,7 @@ import { useEffect, useState, useTransition } from "react";
 import { ChatPanel } from "@/app/components/ChatPanel";
 import { Sidebar } from "@/app/components/Sidebar";
 import { TopBar } from "@/app/components/TopBar";
-import type { Citation, ChatMode, Source, SourceDrawerTab } from "@/app/components/types";
+import type { Citation, ChatMode, Source, SourceDrawerTab, Message, Thinker } from "@/app/components/types";
 
 export default function HomePage() {
   const [input, setInput] = useState("");
@@ -16,7 +16,7 @@ export default function HomePage() {
   const [sourceDrawerTab, setSourceDrawerTab] = useState<SourceDrawerTab>("urls");
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [citations, setCitations] = useState<Citation[]>([]);
   const [chatMode, setChatMode] = useState<ChatMode>("standard");
   const [error, setError] = useState<string | null>(null);
@@ -53,22 +53,45 @@ export default function HomePage() {
   async function handleImport() {
     setError(null);
     startTransition(async () => {
-      const response = await fetch("/api/videos/import", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ input })
-      });
+      try {
+        if (!input.trim()) {
+          setError("Please enter a YouTube URL");
+          return;
+        }
 
-      const json = (await response.json()) as { error?: string };
-      if (json.error) {
-        setError(json.error);
-        return;
+        const response = await fetch("/api/videos/import", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ input })
+        });
+
+        if (!response.ok && response.status !== 500) {
+          setError(`HTTP error: ${response.status}`);
+          return;
+        }
+
+        let json: { error?: string; workspace?: unknown; videos?: unknown };
+        try {
+          json = (await response.json()) as { error?: string; workspace?: unknown; videos?: unknown };
+        } catch {
+          setError("Server returned invalid response");
+          return;
+        }
+
+        if (json.error) {
+          setError(json.error);
+          return;
+        }
+
+        setInput("");
+        await refreshAll();
+      } catch (error) {
+        console.error("Import failed:", error);
+        const message = error instanceof Error ? error.message : "Failed to import";
+        setError(`Import error: ${message}`);
       }
-
-      setInput("");
-      await refreshAll();
     });
   }
 
@@ -79,69 +102,122 @@ export default function HomePage() {
 
     setError(null);
     startTransition(async () => {
-      const formData = new FormData();
+      try {
+        const formData = new FormData();
 
-      for (const file of Array.from(selectedFiles)) {
-        formData.append("files", file);
+        for (const file of Array.from(selectedFiles)) {
+          formData.append("files", file);
+        }
+
+        const response = await fetch("/api/files/import", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok && response.status !== 500) {
+          setError(`HTTP error: ${response.status}`);
+          return;
+        }
+
+        let json: { error?: string };
+        try {
+          json = (await response.json()) as { error?: string };
+        } catch {
+          setError("Server returned invalid response");
+          return;
+        }
+
+        if (json.error) {
+          setError(json.error);
+          return;
+        }
+
+        setSelectedFiles(null);
+        const fileInput = document.getElementById("file-import-input") as HTMLInputElement | null;
+        if (fileInput) {
+          fileInput.value = "";
+        }
+        await refreshAll();
+      } catch (error) {
+        console.error("File import failed:", error);
+        const message = error instanceof Error ? error.message : "Failed to import file";
+        setError(`File import error: ${message}`);
       }
-
-      const response = await fetch("/api/files/import", {
-        method: "POST",
-        body: formData
-      });
-
-      const json = (await response.json()) as { error?: string };
-      if (json.error) {
-        setError(json.error);
-        return;
-      }
-
-      setSelectedFiles(null);
-      const fileInput = document.getElementById("file-import-input") as HTMLInputElement | null;
-      if (fileInput) {
-        fileInput.value = "";
-      }
-      await refreshAll();
     });
   }
 
   async function handleAsk() {
+    if (!question.trim()) return;
+    
+    const userQ = question;
+    setQuestion("");
+    setMessages(prev => [...prev, { role: "user", content: userQ }]);
     setError(null);
+
     startTransition(async () => {
-      const endpoint =
-        chatMode === "standard"
-          ? "/api/chat"
-          : chatMode === "mode1"
-            ? "/api/chat/mode1"
-            : "/api/chat/mode2";
+      try {
+        const endpoint =
+          chatMode === "standard"
+            ? "/api/chat"
+            : chatMode === "mode1"
+              ? "/api/chat/mode1"
+              : "/api/chat/mode2";
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          question,
-          sourceIds: selectedSourceIds.length ? selectedSourceIds : undefined
-        })
-      });
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            question: userQ,
+            sourceIds: selectedSourceIds.length ? selectedSourceIds : undefined
+          })
+        });
 
-      const json = (await response.json()) as {
-        answer?: string;
-        citations?: Citation[];
-        finalAnswer?: string;
-        error?: string;
-      };
+        let json: {
+          answer?: string;
+          citations?: Citation[];
+          finalAnswer?: string;
+          thinkers?: Thinker[];
+          error?: string;
+        };
 
-      if (json.error) {
-        setError(json.error);
-        return;
+        try {
+          json = (await response.json()) as {
+            answer?: string;
+            citations?: Citation[];
+            finalAnswer?: string;
+            thinkers?: Thinker[];
+            error?: string;
+          };
+        } catch {
+          setError(`Server returned invalid response (HTTP ${response.status})`);
+          return;
+        }
+
+        if (!response.ok) {
+          setError(json.error ?? `HTTP error: ${response.status}`);
+          return;
+        }
+
+        if (json.error) {
+          setError(json.error);
+          return;
+        }
+
+        const botAnswer = json.answer ?? json.finalAnswer ?? "";
+        setMessages(prev => [...prev, { 
+          role: "assistant", 
+          content: botAnswer,
+          thinkers: json.thinkers
+        }]);
+        setCitations(json.citations ?? []);
+        await refreshAll();
+      } catch (error) {
+        console.error("Chat failed:", error);
+        const message = error instanceof Error ? error.message : "Chat failed";
+        setError(`Chat error: ${message}`);
       }
-
-      setAnswer(json.answer ?? json.finalAnswer ?? "");
-      setCitations(json.citations ?? []);
-      setQuestion("");
-      await refreshAll();
     });
   }
 
@@ -189,8 +265,8 @@ export default function HomePage() {
 
           <section className="chat-container">
             <ChatPanel
+              messages={messages}
               question={question}
-              answer={answer}
               activeScopeCount={selectedSourceIds.length || sources.length}
               isPending={isPending}
               mode={chatMode}

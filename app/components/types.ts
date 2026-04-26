@@ -22,3 +22,15 @@ export type Citation = {
 export type SourceDrawerTab = "urls" | "files";
 
 export type ChatMode = "standard" | "mode1" | "mode2";
+
+export type Thinker = {
+  role: string;
+  label: string;
+  response: string;
+};
+
+export type Message = {
+  role: "user" | "assistant";
+  content: string;
+  thinkers?: Thinker[];
+};

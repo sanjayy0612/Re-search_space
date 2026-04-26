@@ -1,5 +1,8 @@
 import os
-from typing import TypedDict
+from typing import TypedDict, Union
+from .web_search import perform_web_search
+from .dynamic_retrieval import dynamic_retrieval
+from .knowledge_base_lookup import lookup_in_knowledge_base
 
 import httpx
 from groq import AsyncGroq
@@ -8,6 +11,7 @@ from prompts import (
     CONNECTOR_SYSTEM_PROMPT,
     DEVILS_ADVOCATE_SYSTEM_PROMPT,
     JUDGE_SYSTEM_PROMPT,
+    ROUTER_SYSTEM_PROMPT,
     SKEPTIC_SYSTEM_PROMPT,
     SUMMARIZER_SYSTEM_PROMPT,
 )
@@ -29,6 +33,10 @@ class AgentState(TypedDict):
     history: list[HistoryEntry]
     thinkers: list[HistoryEntry]
     final_answer: str
+    live_results: list[str]
+    dynamic_chunks: list[str]
+    tools_called: list[str]
+    remaining_steps: int
 
 
 def format_history(history: list[HistoryEntry]) -> str:
@@ -137,6 +145,59 @@ async def connector_node(state: AgentState) -> AgentState:
     )
     return append_thinker(state, "connector", "Connector", response)
 
+
+async def router_node(state: AgentState) -> AgentState:
+    # Router decides which tool to call or to proceed to judge
+    prompt = f"Question: {state['question']}\nTools already called: {state['tools_called']}\nRemaining steps allowed: {state['remaining_steps']}"
+    response = await call_ollama(ROUTER_SYSTEM_PROMPT, prompt)
+    
+    choice = "judge"
+    if "web_search" in response.lower() and "web_search" not in state["tools_called"]:
+        choice = "web_search"
+    elif "dynamic_retrieval" in response.lower() and "dynamic_retrieval" not in state["tools_called"]:
+        choice = "dynamic_retrieval"
+    elif "wikipedia_lookup" in response.lower() and "wikipedia_lookup" not in state["tools_called"]:
+        choice = "wikipedia_lookup"
+    
+    # If no more steps allowed or judge chosen
+    if state["remaining_steps"] <= 0:
+        choice = "judge"
+
+    return {**state, "next_step": choice}
+
+
+async def web_search_node(state: AgentState) -> AgentState:
+    response = await perform_web_search(state["question"])
+    result = "\n".join(response)
+
+    new_state = {
+        **state,
+        "live_results": [*state.get("live_results", []), *response],
+        "tools_called": [*state.get("tools_called", []), "web_search"],
+        "remaining_steps": state["remaining_steps"] - 1
+    }
+    return append_thinker(new_state, "web_search", "Web Search", result)
+
+async def dynamic_retrieval_node(state: AgentState) -> AgentState:
+    new_chunks = await dynamic_retrieval(state.get("dynamic_chunks", []), state["question"], None) 
+
+    new_state = {
+        **state,
+        "dynamic_chunks": new_chunks,
+        "tools_called": [*state.get("tools_called", []), "dynamic_retrieval"],
+        "remaining_steps": state["remaining_steps"] - 1
+    }
+    return append_thinker(new_state, "dynamic_retrieval", "Dynamic Retrieval", f"Retrieved {len(new_chunks)} new chunks.")
+
+async def wikipedia_lookup_node(state: AgentState) -> AgentState:
+    grounding_response = await lookup_in_knowledge_base(state["question"])
+
+    new_state = {
+        **state,
+        "tools_called": [*state.get("tools_called", []), "wikipedia_lookup"],
+        "remaining_steps": state["remaining_steps"] - 1
+    }
+    return append_thinker(new_state, "wikipedia_lookup", "Knowledge Base Lookup", grounding_response)
 
 async def judge_node(state: AgentState) -> AgentState:
     response = await call_groq(

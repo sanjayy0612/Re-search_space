@@ -40,9 +40,13 @@ async def run_mode2(request: Mode2Request) -> Mode2Response:
     initial_state: AgentState = {
         "question": request.question,
         "context": context,
+        "dynamic_chunks": [],
         "history": [],
         "thinkers": [],
+        "live_results": [],
         "final_answer": "",
+        "tools_called": [],
+        "remaining_steps": 3,
     }
 
     result = await mode2_graph.ainvoke(initial_state)
