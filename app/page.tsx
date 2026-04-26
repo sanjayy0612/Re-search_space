@@ -15,6 +15,8 @@ export default function HomePage() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [sourceDrawerTab, setSourceDrawerTab] = useState<SourceDrawerTab>("urls");
+  const [isSourceStudioOpen, setIsSourceStudioOpen] = useState(true);
+  const [isCitationsOpen, setIsCitationsOpen] = useState(true);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -162,39 +164,52 @@ export default function HomePage() {
     });
   }
 
-  function showUrlsTab() {
-    setSourceDrawerTab("urls");
-  }
-
-  function showFilesTab() {
-    setSourceDrawerTab("files");
-  }
-
   return (
     <>
       <main className="shell">
-        <TopBar onOpenUrls={showUrlsTab} onOpenFiles={showFilesTab} />
+        <TopBar />
 
-        <section className="layout">
-          <ScopePanel
-            tab={sourceDrawerTab}
-            input={input}
-            selectedFiles={selectedFiles}
-            isPending={isPending}
-            sources={sources}
-            selectedSourceIds={selectedSourceIds}
-            readySources={readySources}
-            activeScopeCount={activeScopeCount}
-            onTabChange={setSourceDrawerTab}
-            onInputChange={setInput}
-            onFilesChange={setSelectedFiles}
-            onImport={handleImport}
-            onFileImport={handleFileImport}
-            onToggleSource={toggleSource}
-            onDeleteSource={handleDelete}
-          />
+        <aside className="workspace-toggle-rail" aria-label="Workspace panel controls">
+          <button
+            className={isSourceStudioOpen ? "workspace-toggle workspace-toggle-active" : "workspace-toggle"}
+            onClick={() => setIsSourceStudioOpen((current) => !current)}
+            aria-pressed={isSourceStudioOpen}
+          >
+            Studio
+          </button>
+          <button
+            className={isCitationsOpen ? "workspace-toggle workspace-toggle-active" : "workspace-toggle"}
+            onClick={() => setIsCitationsOpen((current) => !current)}
+            aria-pressed={isCitationsOpen}
+          >
+            Cite
+          </button>
+        </aside>
 
-          <section className="main-column">
+        <section
+          className={`workspace-layout ${isSourceStudioOpen ? "with-source" : ""} ${isCitationsOpen ? "with-citations" : ""}`}
+        >
+          {isSourceStudioOpen ? (
+            <ScopePanel
+              tab={sourceDrawerTab}
+              input={input}
+              selectedFiles={selectedFiles}
+              isPending={isPending}
+              sources={sources}
+              selectedSourceIds={selectedSourceIds}
+              readySources={readySources}
+              activeScopeCount={activeScopeCount}
+              onTabChange={setSourceDrawerTab}
+              onInputChange={setInput}
+              onFilesChange={setSelectedFiles}
+              onImport={handleImport}
+              onFileImport={handleFileImport}
+              onToggleSource={toggleSource}
+              onDeleteSource={handleDelete}
+            />
+          ) : null}
+
+          <section className="chat-stage">
             <ChatPanel
               question={question}
               answer={answer}
@@ -206,10 +221,14 @@ export default function HomePage() {
               onAsk={handleAsk}
             />
 
-            <CitationsPanel citations={citations} />
-
             {error ? <p className="failure app-error">{error}</p> : null}
           </section>
+
+          {isCitationsOpen ? (
+            <aside className="citations-dock">
+              <CitationsPanel citations={citations} />
+            </aside>
+          ) : null}
         </section>
       </main>
     </>
