@@ -328,6 +328,23 @@ button {
   display: grid;
   gap: 18px;
   animation-delay: 70ms;
+  max-height: calc(100vh - 44px);
+  overflow: auto;
+}
+
+.sidebar-ingest {
+  display: grid;
+  gap: 12px;
+}
+
+.sidebar-ingest .drawer-pane {
+  padding: 14px;
+}
+
+.scope-library {
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .scope-intro p,
@@ -683,34 +700,12 @@ button {
 
   .scope-panel {
     position: static;
+    max-height: none;
+    overflow: visible;
   }
 }
 
 @media (max-width: 720px) {
-  .source-rail {
-    left: 12px;
-    top: auto;
-    bottom: 14px;
-    grid-template-columns: repeat(2, auto);
-    width: auto;
-    transform: none;
-  }
-
-  .rail-pulse {
-    display: none;
-  }
-
-  .source-drawer {
-    inset: 12px;
-    width: auto;
-    padding: 18px;
-    transform: translateY(calc(100% + 24px));
-  }
-
-  .source-drawer-open {
-    transform: translateY(0);
-  }
-
   .drawer-head,
   .drawer-tabs,
   .topbar,
@@ -723,7 +718,7 @@ button {
   .shell {
     width: min(100vw - 24px, 1320px);
     padding-top: 20px;
-    padding-bottom: 92px;
+    padding-bottom: 28px;
   }
 
   .topbar-actions {
@@ -745,5 +740,11 @@ button {
 
   .metric-grid {
     grid-template-columns: 1fr;
+  }
+
+  .scope-library {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 }

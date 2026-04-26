@@ -6,8 +6,6 @@ import { useEffect, useState, useTransition } from "react";
 import { ChatPanel } from "@/app/components/ChatPanel";
 import { CitationsPanel } from "@/app/components/CitationsPanel";
 import { ScopePanel } from "@/app/components/ScopePanel";
-import { SourceDrawer } from "@/app/components/SourceDrawer";
-import { SourceRail } from "@/app/components/SourceRail";
 import { TopBar } from "@/app/components/TopBar";
 import type { Citation, ChatMode, Source, SourceDrawerTab } from "@/app/components/types";
 
@@ -16,7 +14,6 @@ export default function HomePage() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
-  const [isSourceDrawerOpen, setIsSourceDrawerOpen] = useState(false);
   const [sourceDrawerTab, setSourceDrawerTab] = useState<SourceDrawerTab>("urls");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -74,7 +71,6 @@ export default function HomePage() {
 
       setInput("");
       await refreshAll();
-      setIsSourceDrawerOpen(false);
     });
   }
 
@@ -108,7 +104,6 @@ export default function HomePage() {
         fileInput.value = "";
       }
       await refreshAll();
-      setIsSourceDrawerOpen(false);
     });
   }
 
@@ -167,52 +162,36 @@ export default function HomePage() {
     });
   }
 
-  function openUrlsDrawer() {
+  function showUrlsTab() {
     setSourceDrawerTab("urls");
-    setIsSourceDrawerOpen(true);
   }
 
-  function openFilesDrawer() {
+  function showFilesTab() {
     setSourceDrawerTab("files");
-    setIsSourceDrawerOpen(true);
   }
 
   return (
     <>
-      <SourceRail
-        sourceDrawerTab={sourceDrawerTab}
-        onOpenUrls={openUrlsDrawer}
-        onOpenFiles={openFilesDrawer}
-      />
-
-      <SourceDrawer
-        isOpen={isSourceDrawerOpen}
-        tab={sourceDrawerTab}
-        input={input}
-        selectedFiles={selectedFiles}
-        sources={sources}
-        selectedSourceIds={selectedSourceIds}
-        isPending={isPending}
-        onClose={() => setIsSourceDrawerOpen(false)}
-        onTabChange={setSourceDrawerTab}
-        onInputChange={setInput}
-        onFilesChange={setSelectedFiles}
-        onImport={handleImport}
-        onFileImport={handleFileImport}
-        onToggleSource={toggleSource}
-        onDeleteSource={handleDelete}
-      />
-
       <main className="shell">
-        <TopBar onOpenUrls={openUrlsDrawer} onOpenFiles={openFilesDrawer} />
+        <TopBar onOpenUrls={showUrlsTab} onOpenFiles={showFilesTab} />
 
         <section className="layout">
           <ScopePanel
+            tab={sourceDrawerTab}
+            input={input}
+            selectedFiles={selectedFiles}
+            isPending={isPending}
             sources={sources}
             selectedSourceIds={selectedSourceIds}
             readySources={readySources}
             activeScopeCount={activeScopeCount}
-            onManageScope={openUrlsDrawer}
+            onTabChange={setSourceDrawerTab}
+            onInputChange={setInput}
+            onFilesChange={setSelectedFiles}
+            onImport={handleImport}
+            onFileImport={handleFileImport}
+            onToggleSource={toggleSource}
+            onDeleteSource={handleDelete}
           />
 
           <section className="main-column">
